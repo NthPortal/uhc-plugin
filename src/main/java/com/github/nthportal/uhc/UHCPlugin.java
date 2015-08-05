@@ -22,11 +22,11 @@ public final class UHCPlugin extends JavaPlugin {
 
         PluginCommand mainCommand = getCommand(MainCommandExecutor.NAME);
         mainCommand.setExecutor(new MainCommandExecutor(this));
-        mainCommand.setTabCompleter(new MainCommandTabCompleter(this));
+        mainCommand.setTabCompleter(new MainCommandTabCompleter());
 
         PluginCommand confCommand = getCommand(ConfCommandExecutor.NAME);
         confCommand.setExecutor(new ConfCommandExecutor(this));
-        confCommand.setTabCompleter(new ConfCommandTabCompleter(this));
+        confCommand.setTabCompleter(new ConfCommandTabCompleter());
 
         getServer().getPluginManager().registerEvents(new CustomListener(this), this);
     }
