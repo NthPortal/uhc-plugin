@@ -19,6 +19,6 @@ commands:
       /uhc-conf on {EVENT} list [PAGE]
       /uhc-conf on {EVENT} move <TARGET INDEX> <DESTINATION INDEX>
       'add' and 'move' place the command before the specified index
-      {EVENT}: <start|stop|pause|resume|countdownStart|countdownMark|epStart|epEnd|death|startEpNum>
+      {EVENT}: <start|stop|pause|resume|countdownStart|countdownMark|epStart|epEnd|death|startEpNum|minute>
     permission: uhc-plugin.uhc-conf
     permission-message: You don't have permission to run this command

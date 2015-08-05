@@ -17,10 +17,12 @@ import java.util.logging.Level;
 public class Timer {
     private final UHCPlugin plugin;
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    private Future<?> scheduleFuture;
+    private Future<?> episodeFuture;
+    private Future<?> minuteFuture;
     private State state = State.STOPPED;
     private int interval;
     private int episode = 0;
+    private int minute = 0;
     private long originalStartTime;
     private long effectiveStartTime;
     private long elapsedTime = 0;
@@ -40,12 +42,18 @@ public class Timer {
             interval = plugin.getConfig().getInt(Config.EPISODE_TIME);
             countdown();
             originalStartTime = System.currentTimeMillis();
-            scheduleFuture = service.scheduleAtFixedRate(new Runnable() {
+            episodeFuture = service.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
                     doEpisodeMarker();
                 }
             }, interval, interval, TimeUnit.MINUTES);
+            minuteFuture = service.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    onMinute();
+                }
+            }, 1, 1, TimeUnit.MINUTES);
             effectiveStartTime = originalStartTime;
             episode = 1;
 
@@ -65,7 +73,8 @@ public class Timer {
                 return false;
             }
 
-            scheduleFuture.cancel(true);
+            episodeFuture.cancel(true);
+            minuteFuture.cancel(true);
             episode = 0;
             originalStartTime = 0;
             effectiveStartTime = 0;
@@ -88,7 +97,8 @@ public class Timer {
 
             long currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - effectiveStartTime;
-            scheduleFuture.cancel(true);
+            episodeFuture.cancel(true);
+            minuteFuture.cancel(true);
 
             onPause();
             state = State.PAUSED;
@@ -106,14 +116,23 @@ public class Timer {
             }
 
             long intervalInMillis = TimeUnit.MINUTES.toMillis(interval);
+            long minuteInMillis = TimeUnit.MINUTES.toMillis(1);
             long timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
-            scheduleFuture = service.scheduleAtFixedRate(new Runnable() {
+            long timeUntilNextMinute = minuteInMillis - (elapsedTime % minuteInMillis);
+
+            effectiveStartTime = System.currentTimeMillis() - elapsedTime;
+            episodeFuture = service.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
                     doEpisodeMarker();
                 }
             }, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
-            effectiveStartTime = System.currentTimeMillis() - elapsedTime;
+            minuteFuture = service.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    onMinute();
+                }
+            }, timeUntilNextMinute, minuteInMillis, TimeUnit.MILLISECONDS);
             elapsedTime = 0;
 
             onResume();
@@ -220,6 +239,11 @@ public class Timer {
         List<Function<String, String>> replacements = new ArrayList<>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(mark)));
         CommandUtil.executeEventCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
+    }
+
+    private void onMinute() {
+        minute++;
+        CommandUtil.executeMappedCommandsMatching(plugin, Config.Events.ON_MINUTE, minute);
     }
 
     public enum State {
