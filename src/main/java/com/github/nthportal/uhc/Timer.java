@@ -245,8 +245,6 @@ public class Timer {
         CommandUtil.executeCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 
-
-
     public enum State {
         STOPPED, RUNNING, PAUSED
     }
