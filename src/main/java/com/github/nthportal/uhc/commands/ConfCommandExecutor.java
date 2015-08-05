@@ -1,7 +1,7 @@
 package com.github.nthportal.uhc.commands;
 
-import com.github.nthportal.uhc.core.Config;
 import com.github.nthportal.uhc.UHCPlugin;
+import com.github.nthportal.uhc.core.Config;
 import com.google.common.base.Joiner;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

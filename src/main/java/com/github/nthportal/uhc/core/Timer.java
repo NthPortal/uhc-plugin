@@ -1,7 +1,6 @@
 package com.github.nthportal.uhc.core;
 
 import com.github.nthportal.uhc.UHCPlugin;
-import com.github.nthportal.uhc.core.Config;
 import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.base.Function;
 
@@ -51,7 +50,7 @@ public class Timer {
             episode = 1;
 
             onStart();
-            onEpisodeStart(); // TODO maybe remove?
+            onEpisodeStart();
             state = State.RUNNING;
             return true;
         } finally {
