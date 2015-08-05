@@ -16,6 +16,7 @@ public class Config {
         config.addDefault(COUNTDOWN_FROM, 5);
 
         List<String> emptyList = Collections.emptyList();
+        config.addDefault(Events.ON_COUNTDOWN_START, emptyList);
         config.addDefault(Events.ON_COUNTDOWN_MARK, emptyList);
         config.addDefault(Events.ON_START, emptyList);
         config.addDefault(Events.ON_STOP, emptyList);
@@ -30,6 +31,7 @@ public class Config {
     }
 
     public static class Events {
+        static final String ON_COUNTDOWN_START = "onCountdownStart";
         static final String ON_COUNTDOWN_MARK = "onCountdownMark";
         static final String ON_START = "onStart";
         static final String ON_STOP = "onStop";

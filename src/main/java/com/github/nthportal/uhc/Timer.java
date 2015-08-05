@@ -156,6 +156,7 @@ public class Timer {
     }
 
     private void countdown() {
+        onCountdownStart();
         int countdownFrom = config.getInt(Config.COUNTDOWN_FROM);
         for (int i = 0; i < countdownFrom; i++) {
             onCountdownMark(countdownFrom - i);
@@ -232,6 +233,10 @@ public class Timer {
         executeCommands(Config.Events.ON_EPISODE_END, replacements);
     }
 
+    private void onCountdownStart() {
+        executeCommands(Config.Events.ON_COUNTDOWN_START);
+    }
+
     private void onCountdownMark(final int mark) {
         List<Function<String, String>> replacements = new ArrayList<>();
         replacements.add(new Function<String, String>() {
@@ -273,6 +278,6 @@ public class Timer {
     private static class Replacements {
         public static final String MINUTES = "{{minutes}}";
         public static final String EPISODE = "{{episode}}";
-        public static final String COUNTDOWN_MARK = "{{countdown}}";
+        public static final String COUNTDOWN_MARK = "{{mark}}";
     }
 }
