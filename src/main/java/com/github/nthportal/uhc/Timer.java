@@ -264,7 +264,7 @@ public class Timer {
                 server.dispatchCommand(server.getConsoleSender(), command);
             }
             // Why is this a RuntimeException?
-            // It's not in my control if someone else doesn't know how to code their command executor
+            // It's not in my control if someone else doesn't know how to code their CommandExecutor
             catch (CommandException e) {
                 plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
             }
