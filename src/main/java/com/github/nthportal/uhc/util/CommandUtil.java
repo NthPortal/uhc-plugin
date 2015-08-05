@@ -1,12 +1,14 @@
 package com.github.nthportal.uhc.util;
 
 import com.github.nthportal.uhc.UHCPlugin;
+import com.github.nthportal.uhc.core.Config;
 import com.google.common.base.Function;
 import org.bukkit.Server;
 import org.bukkit.command.CommandException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class CommandUtil {
@@ -26,6 +28,24 @@ public class CommandUtil {
 
             // Execute command
             executeCommand(plugin, command);
+        }
+    }
+
+    public static void executeMappedCommandsMatching(UHCPlugin plugin, String event, int toMatch) {
+        List<Map<?, ?>> mapList = plugin.getConfig().getMapList(event);
+        for (Map<?, ?> map : mapList) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                try {
+                    String key = entry.getKey().toString();
+                    String command = entry.getValue().toString();
+                    int epNum = Integer.parseInt(key);
+                    if (epNum == toMatch) {
+                        CommandUtil.executeCommand(plugin, command);
+                    }
+                } catch (NumberFormatException e) {
+                    plugin.logger.log(Level.WARNING, "onStartEpNum entries must have integer keys");
+                }
+            }
         }
     }
 
