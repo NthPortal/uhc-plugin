@@ -5,6 +5,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class MainCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc";
     public static final String PERMISSION = "uhc-plugin.uhc";
@@ -47,10 +50,19 @@ public class MainCommandExecutor implements CommandExecutor {
         return true;
     }
 
-    private static class Opts {
+    static class Opts {
         static final String START = "start";
         static final String STOP = "stop";
         static final String PAUSE = "pause";
         static final String RESUME = "resume";
+
+        static final Set<String> set = new HashSet<>();
+
+        static {
+            set.add(START);
+            set.add(STOP);
+            set.add(PAUSE);
+            set.add(RESUME);
+        }
     }
 }
