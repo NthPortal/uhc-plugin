@@ -1,6 +1,7 @@
 package com.github.nthportal.uhc;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -9,11 +10,13 @@ import java.util.logging.Level;
 
 public class Timer {
     private final UHCPlugin plugin;
-    private ScheduledExecutorService service;
+    private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private Future<?> scheduleFuture;
     private State state = State.STOPPED;
     private int interval;
     private int episode = 0;
-    private long startTime;
+    private long originalStartTime;
+    private long effectiveStartTime;
     private long elapsedTime = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
@@ -28,16 +31,16 @@ public class Timer {
                 return false;
             }
 
-            service = Executors.newSingleThreadScheduledExecutor();
             interval = plugin.config.getInt(Configs.EPISODE_TIME);
             countdown();
-            startTime = System.currentTimeMillis();
-            service.scheduleAtFixedRate(new Runnable() {
+            originalStartTime = System.currentTimeMillis();
+            scheduleFuture = service.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
                     doEpisodeMarker();
                 }
             }, interval, interval, TimeUnit.MINUTES);
+            effectiveStartTime = originalStartTime;
             episode = 1;
 
             onStart();
@@ -56,9 +59,10 @@ public class Timer {
                 return false;
             }
 
-            service.shutdownNow();
-            service = null;
+            scheduleFuture.cancel(true);
             episode = 0;
+            originalStartTime = 0;
+            effectiveStartTime = 0;
             elapsedTime = 0;
 
             onStop();
@@ -77,8 +81,8 @@ public class Timer {
             }
 
             long currentTime = System.currentTimeMillis();
-            elapsedTime += currentTime - startTime;
-            // TODO shutdown ScheduledExecutorService
+            elapsedTime = currentTime - effectiveStartTime;
+            scheduleFuture.cancel(true);
 
             onPause();
             state = State.PAUSED;
@@ -95,7 +99,16 @@ public class Timer {
                 return false;
             }
 
-            // TODO implement
+            long intervalInMillis = TimeUnit.MINUTES.toMillis(interval);
+            long timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
+            scheduleFuture = service.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    doEpisodeMarker();
+                }
+            }, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
+            effectiveStartTime = System.currentTimeMillis() - elapsedTime;
+            elapsedTime = 0;
 
             onResume();
             state = State.RUNNING;
@@ -109,6 +122,24 @@ public class Timer {
         lock.readLock().lock();
         try {
             return state;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public long getOriginalStartTime() {
+        lock.readLock().lock();
+        try {
+            return originalStartTime;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public long getEffectiveStartTime() {
+        lock.readLock().lock();
+        try {
+            return effectiveStartTime;
         } finally {
             lock.readLock().unlock();
         }
