@@ -33,7 +33,7 @@ public class ConfCommandExecutor implements CommandExecutor {
                 commandSender.sendMessage("Reloaded configuration from file");
                 break;
             case Opts.HELP:
-                commandSender.sendMessage("Help message placeholder"); // TODO replace with actual help message
+                doHelp(commandSender, command);
                 break;
             case Opts.ON:
                 return onEventCommand(commandSender, Arrays.copyOfRange(strings, 1, strings.length));
@@ -42,6 +42,28 @@ public class ConfCommandExecutor implements CommandExecutor {
                 return false;
         }
         return true;
+    }
+
+    private void doHelp(CommandSender commandSender, Command command) {
+        String name = command.getName();
+        commandSender.sendMessage("-------- " + name + " help --------");
+        commandSender.sendMessage("/" + name + " " + Opts.RELOAD + " - reloads configuration from file");
+        commandSender.sendMessage("/" + name + " " + Opts.ON + " {EVENT} " + Opts.ADD
+                + " <first|last|INDEX> <COMMAND> - adds a command to be run first/last or at"
+                + " a specified index relative to other commands already set for an event");
+        commandSender.sendMessage("/" + name + " " + Opts.ON + " {EVENT} " + Opts.REMOVE
+                + " <INDEX> - removes the command set at the specified index for an event");
+        commandSender.sendMessage("/" + name + " " + Opts.ON + " {EVENT} " + Opts.CLEAR
+                + " - clears the commands set for an event");
+        commandSender.sendMessage("/" + name + " " + Opts.ON + " {EVENT} " + Opts.LIST
+                + " [PAGE] - lists the first or a specified page of commands set for an event"
+                + " (Note: commands are run in the order listed)");
+        commandSender.sendMessage("/" + name + " " + Opts.ON + " {EVENT} " + Opts.MOVE
+                + " <TARGET INDEX> <DESTINATION INDEX> - moves the command at the target index to"
+                + " the position before the destination index in the list of commands set for an event");
+        commandSender.sendMessage("Valid events ({EVENT}) are: start, stop, pause, resume, countdownStart,"
+                + " countdownMark, epStart, epEnd, death (\"ep\" is short for \"episode\")");
+        commandSender.sendMessage("-------- " + name + " help --------");
     }
 
     private boolean onEventCommand(CommandSender commandSender, String[] args) {
