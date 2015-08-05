@@ -14,7 +14,7 @@ public class CommandUtil {
     }
 
     static void executeCommands(UHCPlugin plugin, String event, List<Function<String, String>> replaceFunctions) {
-        List<String> commands = plugin.config.getStringList(event);
+        List<String> commands = plugin.getConfig().getStringList(event);
         for (String command : commands) {
             if (command.startsWith("/")) {
                 command = command.substring(1);

@@ -3,18 +3,15 @@ package com.github.nthportal.uhc;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-conf";
     public static final String PERMISSION = "uhc-plugin.uhc-conf";
 
     private final UHCPlugin plugin;
-    private final FileConfiguration config;
 
     public ConfCommandExecutor(UHCPlugin plugin) {
         this.plugin = plugin;
-        config = plugin.config;
     }
 
     @Override

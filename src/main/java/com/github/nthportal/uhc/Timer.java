@@ -15,7 +15,6 @@ import java.util.logging.Level;
 
 public class Timer {
     private final UHCPlugin plugin;
-    private final FileConfiguration config;
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private Future<?> scheduleFuture;
     private State state = State.STOPPED;
@@ -28,7 +27,6 @@ public class Timer {
 
     public Timer(UHCPlugin plugin) {
         this.plugin = plugin;
-        config = plugin.config;
     }
 
     public boolean start() {
@@ -38,7 +36,7 @@ public class Timer {
                 return false;
             }
 
-            interval = config.getInt(Config.EPISODE_TIME);
+            interval = plugin.getConfig().getInt(Config.EPISODE_TIME);
             countdown();
             originalStartTime = System.currentTimeMillis();
             scheduleFuture = service.scheduleAtFixedRate(new Runnable() {
@@ -154,7 +152,7 @@ public class Timer {
 
     private void countdown() {
         onCountdownStart();
-        int countdownFrom = config.getInt(Config.COUNTDOWN_FROM);
+        int countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
         for (int i = 0; i < countdownFrom; i++) {
             onCountdownMark(countdownFrom - i);
             try {

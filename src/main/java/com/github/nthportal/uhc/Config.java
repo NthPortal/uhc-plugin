@@ -10,7 +10,7 @@ public class Config {
     public static final String COUNTDOWN_FROM = "countdownFrom";
 
     public static void setup(UHCPlugin plugin) {
-        FileConfiguration config = plugin.config;
+        FileConfiguration config = plugin.getConfig();
 
         config.addDefault(EPISODE_TIME, 20);
         config.addDefault(COUNTDOWN_FROM, 5);
