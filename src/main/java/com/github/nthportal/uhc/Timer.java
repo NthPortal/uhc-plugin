@@ -255,9 +255,13 @@ public class Timer {
     private void executeCommands(String event, List<Function<String, String>> replaceFunctions) {
         List<String> commands = config.getStringList(event);
         for (String command : commands) {
+            if (command.startsWith("/")) {
+                command = command.substring(1);
+            }
             for (Function<String, String> function : replaceFunctions) {
                 command = function.apply(command);
             }
+
             // Execute command
             Server server = plugin.getServer();
             try {
