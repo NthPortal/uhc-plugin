@@ -14,12 +14,17 @@ public final class UHCPlugin extends JavaPlugin {
     public void onEnable() {
         Config.setup(this);
 
+        // TODO add tab completers
         getCommand(MainCommandExecutor.NAME).setExecutor(new MainCommandExecutor(this));
         getCommand(ConfCommandExecutor.NAME).setExecutor(new ConfCommandExecutor(this));
+
+        getServer().getPluginManager().registerEvents(new CustomListener(this), this);
     }
 
     @Override
     public void onDisable() {
 
     }
+
+
 }

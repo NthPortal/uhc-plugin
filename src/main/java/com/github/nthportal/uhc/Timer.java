@@ -1,12 +1,9 @@
 package com.github.nthportal.uhc;
 
 import com.google.common.base.Function;
-import org.bukkit.Server;
-import org.bukkit.command.CommandException;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -182,19 +179,19 @@ public class Timer {
     // Event handling stuff
 
     private void onStart() {
-        executeCommands(Config.Events.ON_START);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_START);
     }
 
     private void onStop() {
-        executeCommands(Config.Events.ON_STOP);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_STOP);
     }
 
     private void onPause() {
-        executeCommands(Config.Events.ON_PAUSE);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_PAUSE);
     }
 
     private void onResume() {
-        executeCommands(Config.Events.ON_RESUME);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_RESUME);
     }
 
     private void onEpisodeStart() {
@@ -203,16 +200,16 @@ public class Timer {
         replacements.add(new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return s.replace(Replacements.EPISODE, String.valueOf(episode));
+                return s.replace(CommandUtil.Replacements.EPISODE, String.valueOf(episode));
             }
         });
         replacements.add(new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return s.replace(Replacements.MINUTES, String.valueOf(minutes));
+                return s.replace(CommandUtil.Replacements.MINUTES, String.valueOf(minutes));
             }
         });
-        executeCommands(Config.Events.ON_EPISODE_START, replacements);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_EPISODE_START, replacements);
     }
 
     private void onEpisodeEnd() {
@@ -221,20 +218,20 @@ public class Timer {
         replacements.add(new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return s.replace(Replacements.EPISODE, String.valueOf(episode));
+                return s.replace(CommandUtil.Replacements.EPISODE, String.valueOf(episode));
             }
         });
         replacements.add(new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return s.replace(Replacements.MINUTES, String.valueOf(minutes));
+                return s.replace(CommandUtil.Replacements.MINUTES, String.valueOf(minutes));
             }
         });
-        executeCommands(Config.Events.ON_EPISODE_END, replacements);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_EPISODE_END, replacements);
     }
 
     private void onCountdownStart() {
-        executeCommands(Config.Events.ON_COUNTDOWN_START);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_COUNTDOWN_START);
     }
 
     private void onCountdownMark(final int mark) {
@@ -242,46 +239,16 @@ public class Timer {
         replacements.add(new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return s.replace(Replacements.COUNTDOWN_MARK, String.valueOf(mark));
+                return s.replace(CommandUtil.Replacements.COUNTDOWN_MARK, String.valueOf(mark));
             }
         });
-        executeCommands(Config.Events.ON_COUNTDOWN_MARK, replacements);
+        CommandUtil.executeCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 
-    private void executeCommands(String event) {
-        executeCommands(event, Collections.<Function<String, String>>emptyList());
-    }
 
-    private void executeCommands(String event, List<Function<String, String>> replaceFunctions) {
-        List<String> commands = config.getStringList(event);
-        for (String command : commands) {
-            if (command.startsWith("/")) {
-                command = command.substring(1);
-            }
-            for (Function<String, String> function : replaceFunctions) {
-                command = function.apply(command);
-            }
-
-            // Execute command
-            Server server = plugin.getServer();
-            try {
-                server.dispatchCommand(server.getConsoleSender(), command);
-            }
-            // Why is this a RuntimeException?
-            // It's not in my control if someone else doesn't know how to code their CommandExecutor
-            catch (CommandException e) {
-                plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
-            }
-        }
-    }
 
     public enum State {
         STOPPED, RUNNING, PAUSED
     }
 
-    private static class Replacements {
-        public static final String MINUTES = "{{minutes}}";
-        public static final String EPISODE = "{{episode}}";
-        public static final String COUNTDOWN_MARK = "{{mark}}";
-    }
 }
