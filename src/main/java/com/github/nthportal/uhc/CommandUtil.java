@@ -36,7 +36,16 @@ public class CommandUtil {
         }
     }
 
-    static class Replacements {
+    static Function<String, String> replacementFunction(final String target, final String replacement) {
+        return new Function<String, String>() {
+            @Override
+            public String apply(String input) {
+                return input.replace(target, replacement);
+            }
+        };
+    }
+
+    static class ReplaceTargets {
         public static final String MINUTES = "{{minutes}}";
         public static final String EPISODE = "{{episode}}";
         public static final String COUNTDOWN_MARK = "{{mark}}";

@@ -197,36 +197,16 @@ public class Timer {
     private void onEpisodeStart() {
         final int minutes = interval * (episode - 1);
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(new Function<String, String>() {
-            @Override
-            public String apply(String s) {
-                return s.replace(CommandUtil.Replacements.EPISODE, String.valueOf(episode));
-            }
-        });
-        replacements.add(new Function<String, String>() {
-            @Override
-            public String apply(String s) {
-                return s.replace(CommandUtil.Replacements.MINUTES, String.valueOf(minutes));
-            }
-        });
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(episode)));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(minutes)));
         CommandUtil.executeCommands(plugin, Config.Events.ON_EPISODE_START, replacements);
     }
 
     private void onEpisodeEnd() {
         final int minutes = interval * episode;
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(new Function<String, String>() {
-            @Override
-            public String apply(String s) {
-                return s.replace(CommandUtil.Replacements.EPISODE, String.valueOf(episode));
-            }
-        });
-        replacements.add(new Function<String, String>() {
-            @Override
-            public String apply(String s) {
-                return s.replace(CommandUtil.Replacements.MINUTES, String.valueOf(minutes));
-            }
-        });
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(episode)));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(minutes)));
         CommandUtil.executeCommands(plugin, Config.Events.ON_EPISODE_END, replacements);
     }
 
@@ -236,12 +216,7 @@ public class Timer {
 
     private void onCountdownMark(final int mark) {
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(new Function<String, String>() {
-            @Override
-            public String apply(String s) {
-                return s.replace(CommandUtil.Replacements.COUNTDOWN_MARK, String.valueOf(mark));
-            }
-        });
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(mark)));
         CommandUtil.executeCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 

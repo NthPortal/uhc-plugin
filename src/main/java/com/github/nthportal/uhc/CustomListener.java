@@ -22,12 +22,7 @@ public class CustomListener implements Listener {
         }
 
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(new Function<String, String>() {
-            @Override
-            public String apply(String s) {
-                return s.replace(CommandUtil.Replacements.PLAYER, event.getEntity().getName());
-            }
-        });
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.PLAYER, event.getEntity().getName()));
         CommandUtil.executeCommands(plugin, Config.Events.ON_DEATH, replacements);
     }
 }
