@@ -24,5 +24,9 @@ public class ConfCommandExecutor implements CommandExecutor {
         static final String ON_STOP = "onStop";
         static final String ON_PAUSE = "onPause";
         static final String ON_RESUME = "onResume";
+        static final String ON_EPISODE_START = "onEpStart";
+        static final String ON_EPISODE_END = "onEpEnd";
+        static final String ON_COUNTDOWN = "onCountdownMark";
+        static final String ON_DEATH = "onDeath";
     }
 }
