@@ -1,5 +1,6 @@
-package com.github.nthportal.uhc;
+package com.github.nthportal.uhc.core;
 
+import com.github.nthportal.uhc.UHCPlugin;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Collections;
@@ -31,14 +32,14 @@ public class Config {
     }
 
     public static class Events {
-        static final String ON_COUNTDOWN_START = "onCountdownStart";
-        static final String ON_COUNTDOWN_MARK = "onCountdownMark";
-        static final String ON_START = "onStart";
-        static final String ON_STOP = "onStop";
-        static final String ON_PAUSE = "onPause";
-        static final String ON_RESUME = "onResume";
-        static final String ON_EPISODE_START = "onEpStart";
-        static final String ON_EPISODE_END = "onEpEnd";
-        static final String ON_DEATH = "onDeath";
+        public static final String ON_COUNTDOWN_START = "onCountdownStart";
+        public static final String ON_COUNTDOWN_MARK = "onCountdownMark";
+        public static final String ON_START = "onStart";
+        public static final String ON_STOP = "onStop";
+        public static final String ON_PAUSE = "onPause";
+        public static final String ON_RESUME = "onResume";
+        public static final String ON_EPISODE_START = "onEpStart";
+        public static final String ON_EPISODE_END = "onEpEnd";
+        public static final String ON_DEATH = "onDeath";
     }
 }

@@ -1,5 +1,7 @@
-package com.github.nthportal.uhc;
+package com.github.nthportal.uhc.core;
 
+import com.github.nthportal.uhc.UHCPlugin;
+import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.base.Function;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

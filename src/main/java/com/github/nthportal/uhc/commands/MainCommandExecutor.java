@@ -1,5 +1,6 @@
-package com.github.nthportal.uhc;
+package com.github.nthportal.uhc.commands;
 
+import com.github.nthportal.uhc.UHCPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

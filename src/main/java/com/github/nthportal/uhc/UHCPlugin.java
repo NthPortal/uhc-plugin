@@ -1,5 +1,10 @@
 package com.github.nthportal.uhc;
 
+import com.github.nthportal.uhc.commands.ConfCommandExecutor;
+import com.github.nthportal.uhc.commands.MainCommandExecutor;
+import com.github.nthportal.uhc.core.Config;
+import com.github.nthportal.uhc.core.CustomListener;
+import com.github.nthportal.uhc.core.Timer;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Logger;
