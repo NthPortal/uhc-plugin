@@ -16,8 +16,6 @@ public final class UHCPlugin extends JavaPlugin {
 
         getCommand(MainCommandExecutor.NAME).setExecutor(new MainCommandExecutor(this));
         getCommand(ConfCommandExecutor.NAME).setExecutor(new ConfCommandExecutor(this));
-
-        logger.info("Enabled UHC Plugin");
     }
 
     @Override
