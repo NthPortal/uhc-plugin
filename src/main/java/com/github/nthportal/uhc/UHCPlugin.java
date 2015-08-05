@@ -6,8 +6,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.logging.Logger;
 
 public final class UHCPlugin extends JavaPlugin {
-    public Logger logger = getLogger();
-    public FileConfiguration config = getConfig();
+    public final Logger logger = getLogger();
+    public final FileConfiguration config = getConfig();
+    public final Timer timer = new Timer(this);
 
     @Override
     public void onEnable() {
