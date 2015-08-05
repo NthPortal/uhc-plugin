@@ -16,16 +16,27 @@ public class Configs {
         config.addDefault(COUNTDOWN_FROM, 5);
 
         List<String> emptyList = Collections.emptyList();
-        config.addDefault(ConfCommandExecutor.Opts.ON_COUNTDOWN_MARK, emptyList);
-        config.addDefault(ConfCommandExecutor.Opts.ON_START, emptyList);
-        config.addDefault(ConfCommandExecutor.Opts.ON_STOP, emptyList);
-        config.addDefault(ConfCommandExecutor.Opts.ON_PAUSE, emptyList);
-        config.addDefault(ConfCommandExecutor.Opts.ON_RESUME, emptyList);
-        config.addDefault(ConfCommandExecutor.Opts.ON_EPISODE_START, emptyList);
-        config.addDefault(ConfCommandExecutor.Opts.ON_EPISODE_END, emptyList);
-        config.addDefault(ConfCommandExecutor.Opts.ON_DEATH, emptyList);
+        config.addDefault(Events.ON_COUNTDOWN_MARK, emptyList);
+        config.addDefault(Events.ON_START, emptyList);
+        config.addDefault(Events.ON_STOP, emptyList);
+        config.addDefault(Events.ON_PAUSE, emptyList);
+        config.addDefault(Events.ON_RESUME, emptyList);
+        config.addDefault(Events.ON_EPISODE_START, emptyList);
+        config.addDefault(Events.ON_EPISODE_END, emptyList);
+        config.addDefault(Events.ON_DEATH, emptyList);
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
+    }
+
+    public static class Events {
+        static final String ON_COUNTDOWN_MARK = "onCountdownMark";
+        static final String ON_START = "onStart";
+        static final String ON_STOP = "onStop";
+        static final String ON_PAUSE = "onPause";
+        static final String ON_RESUME = "onResume";
+        static final String ON_EPISODE_START = "onEpStart";
+        static final String ON_EPISODE_END = "onEpEnd";
+        static final String ON_DEATH = "onDeath";
     }
 }

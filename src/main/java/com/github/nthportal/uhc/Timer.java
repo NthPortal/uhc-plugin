@@ -1,5 +1,13 @@
 package com.github.nthportal.uhc;
 
+import com.google.common.base.Function;
+import org.bukkit.Server;
+import org.bukkit.command.CommandException;
+import org.bukkit.configuration.file.FileConfiguration;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,6 +18,7 @@ import java.util.logging.Level;
 
 public class Timer {
     private final UHCPlugin plugin;
+    private final FileConfiguration config;
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private Future<?> scheduleFuture;
     private State state = State.STOPPED;
@@ -22,6 +31,7 @@ public class Timer {
 
     public Timer(UHCPlugin plugin) {
         this.plugin = plugin;
+        config = plugin.config;
     }
 
     public boolean start() {
@@ -31,7 +41,7 @@ public class Timer {
                 return false;
             }
 
-            interval = plugin.config.getInt(Configs.EPISODE_TIME);
+            interval = config.getInt(Configs.EPISODE_TIME);
             countdown();
             originalStartTime = System.currentTimeMillis();
             scheduleFuture = service.scheduleAtFixedRate(new Runnable() {
@@ -146,7 +156,7 @@ public class Timer {
     }
 
     private void countdown() {
-        int countdownFrom = plugin.config.getInt(Configs.COUNTDOWN_FROM);
+        int countdownFrom = config.getInt(Configs.COUNTDOWN_FROM);
         for (int i = 0; i < countdownFrom; i++) {
             onCountdownMark(countdownFrom - i);
             try {
@@ -171,36 +181,98 @@ public class Timer {
     // Event handling stuff
 
     private void onStart() {
-        // TODO send various start commands
+        executeCommands(Configs.Events.ON_START);
     }
 
     private void onStop() {
-        // TODO send various stop commands
+        executeCommands(Configs.Events.ON_STOP);
     }
 
     private void onPause() {
-        // TODO implement
+        executeCommands(Configs.Events.ON_PAUSE);
     }
 
     private void onResume() {
-        // TODO implement
+        executeCommands(Configs.Events.ON_RESUME);
     }
 
     private void onEpisodeStart() {
-        int minutes = interval * (episode - 1);
-        // TODO run episode start commands
+        final int minutes = interval * (episode - 1);
+        List<Function<String, String>> replacements = new ArrayList<>();
+        replacements.add(new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return s.replace(Replacements.EPISODE, String.valueOf(episode));
+            }
+        });
+        replacements.add(new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return s.replace(Replacements.MINUTES, String.valueOf(minutes));
+            }
+        });
+        executeCommands(Configs.Events.ON_EPISODE_START, replacements);
     }
 
     private void onEpisodeEnd() {
-        int minutes = interval * episode;
-        // TODO run episode end commands
+        final int minutes = interval * episode;
+        List<Function<String, String>> replacements = new ArrayList<>();
+        replacements.add(new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return s.replace(Replacements.EPISODE, String.valueOf(episode));
+            }
+        });
+        replacements.add(new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return s.replace(Replacements.MINUTES, String.valueOf(minutes));
+            }
+        });
+        executeCommands(Configs.Events.ON_EPISODE_END, replacements);
     }
 
-    private void onCountdownMark(int mark) {
-        // TODO run countdown commands
+    private void onCountdownMark(final int mark) {
+        List<Function<String, String>> replacements = new ArrayList<>();
+        replacements.add(new Function<String, String>() {
+            @Override
+            public String apply(String s) {
+                return s.replace(Replacements.COUNTDOWN_MARK, String.valueOf(mark));
+            }
+        });
+        executeCommands(Configs.Events.ON_COUNTDOWN_MARK, replacements);
+    }
+
+    private void executeCommands(String event) {
+        executeCommands(event, Collections.<Function<String, String>>emptyList());
+    }
+
+    private void executeCommands(String event, List<Function<String, String>> replaceFunctions) {
+        List<String> commands = config.getStringList(event);
+        for (String command : commands) {
+            for (Function<String, String> function : replaceFunctions) {
+                command = function.apply(command);
+            }
+            // Execute command
+            Server server = plugin.getServer();
+            try {
+                server.dispatchCommand(server.getConsoleSender(), command);
+            }
+            // Why is this a RuntimeException?
+            // It's not in my control if someone else doesn't know how to code their command executor
+            catch (CommandException e) {
+                plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
+            }
+        }
     }
 
     public enum State {
         STOPPED, RUNNING, PAUSED
+    }
+
+    private static class Replacements {
+        public static final String MINUTES = "{{minutes}}";
+        public static final String EPISODE = "{{episode}}";
+        public static final String COUNTDOWN_MARK = "{{countdown}}";
     }
 }
