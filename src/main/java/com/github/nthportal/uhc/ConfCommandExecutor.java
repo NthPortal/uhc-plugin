@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 
 public class ConfCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-conf";
-    public static final String PERMISSION = "uhcplugin.uhc-conf";
+    public static final String PERMISSION = "uhc-plugin.uhc-conf";
 
     private final UHCPlugin plugin; // In case it's needed later
 
@@ -19,14 +19,14 @@ public class ConfCommandExecutor implements CommandExecutor {
         return false;
     }
 
-    private static class Opts {
+    public static class Opts {
+        static final String ON_COUNTDOWN_MARK = "onCountdownMark";
         static final String ON_START = "onStart";
         static final String ON_STOP = "onStop";
         static final String ON_PAUSE = "onPause";
         static final String ON_RESUME = "onResume";
         static final String ON_EPISODE_START = "onEpStart";
         static final String ON_EPISODE_END = "onEpEnd";
-        static final String ON_COUNTDOWN = "onCountdownMark";
         static final String ON_DEATH = "onDeath";
     }
 }

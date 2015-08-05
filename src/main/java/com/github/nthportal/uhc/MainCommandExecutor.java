@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class MainCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc";
-    public static final String PERMISSION = "uhcplugin.uhc";
+    public static final String PERMISSION = "uhc-plugin.uhc";
 
     private static final Map<String, SubCommand> subcommands = new HashMap<>();
 

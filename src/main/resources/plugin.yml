@@ -7,10 +7,10 @@ commands:
   uhc:
     description: Control the UHC game
     usage: /uhc <start|stop|pause|resume>
-    permission: uhcplugin.uhc
+    permission: uhc-plugin.uhc
     permission-message: You don't have permission to run this command
   uhc-conf:
     description: Configure the UHC game
     usage: /uhc-conf <onStart|onStop|onPause|onResume|onEpStart|onEpEnd|onCountdownMark|onDeath>
-    permission: uhcplugin.uhc
+    permission: uhc-plugin.uhc-conf
     permission-message: You don't have permission to run this command
