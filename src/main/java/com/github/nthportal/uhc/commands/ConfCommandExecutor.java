@@ -224,10 +224,12 @@ public class ConfCommandExecutor implements CommandExecutor {
         return true;
     }
 
-    private static class Opts {
+    static class Opts {
         static final String RELOAD = "reload";
         static final String HELP = "help";
         static final String ON = "on";
+
+        static final Set<String> main = new HashSet<>();
 
         static final String ADD = "add";
         static final String REMOVE = "remove";
@@ -235,11 +237,30 @@ public class ConfCommandExecutor implements CommandExecutor {
         static final String LIST = "list";
         static final String MOVE = "move";
 
+        static final Set<String> secondary = new HashSet<>();
+
         static final String FIRST = "first";
         static final String LAST = "last";
+
+        static final Set<String> locations = new HashSet<>();
+
+        static {
+            main.add(RELOAD);
+            main.add(HELP);
+            main.add(ON);
+
+            secondary.add(ADD);
+            secondary.add(REMOVE);
+            secondary.add(CLEAR);
+            secondary.add(LIST);
+            secondary.add(MOVE);
+
+            locations.add(FIRST);
+            locations.add(LAST);
+        }
     }
 
-    private static class Events {
+    static class Events {
         static final String COUNTDOWN_START = "countdownstart";
         static final String COUNTDOWN_MARK = "countdownmark";
         static final String START = "start";
