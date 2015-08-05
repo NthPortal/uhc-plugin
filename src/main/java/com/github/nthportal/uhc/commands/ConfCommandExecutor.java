@@ -69,7 +69,7 @@ public class ConfCommandExecutor implements CommandExecutor {
             case Opts.MOVE:
                 return doMove(commandSender, onEvent, Arrays.copyOfRange(args, 2, args.length));
             default:
-                commandSender.sendMessage("Invalid sub-command: " + args[0]);
+                commandSender.sendMessage("Invalid sub-command: " + args[1]);
                 return false;
         }
     }
