@@ -26,6 +26,7 @@ public class Config {
         config.addDefault(Events.ON_EPISODE_START, emptyList);
         config.addDefault(Events.ON_EPISODE_END, emptyList);
         config.addDefault(Events.ON_DEATH, emptyList);
+        config.addDefault(Events.ON_START_EP_NUM, Collections.<String, String>emptyMap());
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
@@ -41,5 +42,6 @@ public class Config {
         public static final String ON_EPISODE_START = "onEpStart";
         public static final String ON_EPISODE_END = "onEpEnd";
         public static final String ON_DEATH = "onDeath";
+        public static final String ON_START_EP_NUM = "onStartEpNum";
     }
 }

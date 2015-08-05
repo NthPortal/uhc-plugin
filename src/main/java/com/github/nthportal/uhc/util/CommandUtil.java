@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.logging.Level;
 
 public class CommandUtil {
-    public static void executeCommands(UHCPlugin plugin, String event) {
-        executeCommands(plugin, event, Collections.<Function<String, String>>emptyList());
+    public static void executeEventCommands(UHCPlugin plugin, String event) {
+        executeEventCommands(plugin, event, Collections.<Function<String, String>>emptyList());
     }
 
-    public static void executeCommands(UHCPlugin plugin, String event, List<Function<String, String>> replaceFunctions) {
+    public static void executeEventCommands(UHCPlugin plugin, String event, List<Function<String, String>> replaceFunctions) {
         List<String> commands = plugin.getConfig().getStringList(event);
         for (String command : commands) {
             if (command.startsWith("/")) {
@@ -25,15 +25,19 @@ public class CommandUtil {
             }
 
             // Execute command
-            Server server = plugin.getServer();
-            try {
-                server.dispatchCommand(server.getConsoleSender(), command);
-            }
-            // Why is this a RuntimeException?
-            // It's not in my control if someone else doesn't know how to code their CommandExecutor
-            catch (CommandException e) {
-                plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
-            }
+            executeCommand(plugin, command);
+        }
+    }
+
+    public static void executeCommand(UHCPlugin plugin, String command) {
+        Server server = plugin.getServer();
+        try {
+            server.dispatchCommand(server.getConsoleSender(), command);
+        }
+        // Why is this a RuntimeException?
+        // It's not in my control if someone else doesn't know how to code their CommandExecutor
+        catch (CommandException e) {
+            plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
         }
     }
 

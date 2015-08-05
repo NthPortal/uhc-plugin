@@ -6,6 +6,8 @@ import com.google.common.base.Function;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -178,19 +180,19 @@ public class Timer {
     // Event handling stuff
 
     private void onStart() {
-        CommandUtil.executeCommands(plugin, Config.Events.ON_START);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_START);
     }
 
     private void onStop() {
-        CommandUtil.executeCommands(plugin, Config.Events.ON_STOP);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_STOP);
     }
 
     private void onPause() {
-        CommandUtil.executeCommands(plugin, Config.Events.ON_PAUSE);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_PAUSE);
     }
 
     private void onResume() {
-        CommandUtil.executeCommands(plugin, Config.Events.ON_RESUME);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_RESUME);
     }
 
     private void onEpisodeStart() {
@@ -198,7 +200,27 @@ public class Timer {
         List<Function<String, String>> replacements = new ArrayList<>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(episode)));
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(minutes)));
-        CommandUtil.executeCommands(plugin, Config.Events.ON_EPISODE_START, replacements);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_EPISODE_START, replacements);
+
+        onSpecificEpStart();
+    }
+
+    private void onSpecificEpStart() {
+        List<Map<?, ?>> mapList = plugin.getConfig().getMapList(Config.Events.ON_START_EP_NUM);
+        for (Map<?, ?> map : mapList) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                try {
+                    String key = entry.getKey().toString();
+                    String command = entry.getValue().toString();
+                    int epNum = Integer.parseInt(key);
+                    if (epNum == episode) {
+                        CommandUtil.executeCommand(plugin, command);
+                    }
+                } catch (NumberFormatException e) {
+                    plugin.logger.log(Level.WARNING, "onStartEpNum entries must have integer keys");
+                }
+            }
+        }
     }
 
     private void onEpisodeEnd() {
@@ -206,17 +228,17 @@ public class Timer {
         List<Function<String, String>> replacements = new ArrayList<>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(episode)));
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(minutes)));
-        CommandUtil.executeCommands(plugin, Config.Events.ON_EPISODE_END, replacements);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_EPISODE_END, replacements);
     }
 
     private void onCountdownStart() {
-        CommandUtil.executeCommands(plugin, Config.Events.ON_COUNTDOWN_START);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_COUNTDOWN_START);
     }
 
     private void onCountdownMark(final int mark) {
         List<Function<String, String>> replacements = new ArrayList<>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(mark)));
-        CommandUtil.executeCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 
     public enum State {

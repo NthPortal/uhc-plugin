@@ -25,6 +25,6 @@ public class CustomListener implements Listener {
 
         List<Function<String, String>> replacements = new ArrayList<>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.PLAYER, event.getEntity().getName()));
-        CommandUtil.executeCommands(plugin, Config.Events.ON_DEATH, replacements);
+        CommandUtil.executeEventCommands(plugin, Config.Events.ON_DEATH, replacements);
     }
 }
