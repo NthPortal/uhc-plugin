@@ -41,7 +41,7 @@ public class Timer {
                 return false;
             }
 
-            interval = config.getInt(Configs.EPISODE_TIME);
+            interval = config.getInt(Config.EPISODE_TIME);
             countdown();
             originalStartTime = System.currentTimeMillis();
             scheduleFuture = service.scheduleAtFixedRate(new Runnable() {
@@ -156,7 +156,7 @@ public class Timer {
     }
 
     private void countdown() {
-        int countdownFrom = config.getInt(Configs.COUNTDOWN_FROM);
+        int countdownFrom = config.getInt(Config.COUNTDOWN_FROM);
         for (int i = 0; i < countdownFrom; i++) {
             onCountdownMark(countdownFrom - i);
             try {
@@ -181,19 +181,19 @@ public class Timer {
     // Event handling stuff
 
     private void onStart() {
-        executeCommands(Configs.Events.ON_START);
+        executeCommands(Config.Events.ON_START);
     }
 
     private void onStop() {
-        executeCommands(Configs.Events.ON_STOP);
+        executeCommands(Config.Events.ON_STOP);
     }
 
     private void onPause() {
-        executeCommands(Configs.Events.ON_PAUSE);
+        executeCommands(Config.Events.ON_PAUSE);
     }
 
     private void onResume() {
-        executeCommands(Configs.Events.ON_RESUME);
+        executeCommands(Config.Events.ON_RESUME);
     }
 
     private void onEpisodeStart() {
@@ -211,7 +211,7 @@ public class Timer {
                 return s.replace(Replacements.MINUTES, String.valueOf(minutes));
             }
         });
-        executeCommands(Configs.Events.ON_EPISODE_START, replacements);
+        executeCommands(Config.Events.ON_EPISODE_START, replacements);
     }
 
     private void onEpisodeEnd() {
@@ -229,7 +229,7 @@ public class Timer {
                 return s.replace(Replacements.MINUTES, String.valueOf(minutes));
             }
         });
-        executeCommands(Configs.Events.ON_EPISODE_END, replacements);
+        executeCommands(Config.Events.ON_EPISODE_END, replacements);
     }
 
     private void onCountdownMark(final int mark) {
@@ -240,7 +240,7 @@ public class Timer {
                 return s.replace(Replacements.COUNTDOWN_MARK, String.valueOf(mark));
             }
         });
-        executeCommands(Configs.Events.ON_COUNTDOWN_MARK, replacements);
+        executeCommands(Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 
     private void executeCommands(String event) {

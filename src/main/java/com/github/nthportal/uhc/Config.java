@@ -5,7 +5,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.util.Collections;
 import java.util.List;
 
-public class Configs {
+public class Config {
     public static final String EPISODE_TIME = "episodeTime";
     public static final String COUNTDOWN_FROM = "countdownFrom";
 

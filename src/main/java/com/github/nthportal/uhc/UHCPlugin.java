@@ -12,7 +12,7 @@ public final class UHCPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Configs.setup(this);
+        Config.setup(this);
 
         getCommand(MainCommandExecutor.NAME).setExecutor(new MainCommandExecutor(this));
         getCommand(ConfCommandExecutor.NAME).setExecutor(new ConfCommandExecutor(this));
