@@ -1,0 +1,16 @@
+name: UHC-Plugin
+main: com.github.nthportal.uhc.UHCPlugin
+author: NthPortal
+version: 1.0.0-SNAPSHOT
+
+commands:
+  uhc:
+    description: Control the UHC game
+    usage: /uhc <start|stop|pause|resume>
+    permission: uhcplugin.uhc
+    permission-message: You don't have permission to run this command
+  uhc-conf:
+    description: Configure the UHC game
+    usage: /uhc-conf <onStart|onStop|onPause|onResume>
+    permission: uhcplugin.uhc
+    permission-message: You don't have permission to run this command
