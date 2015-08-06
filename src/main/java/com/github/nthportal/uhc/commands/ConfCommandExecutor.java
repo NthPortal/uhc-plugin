@@ -292,8 +292,6 @@ public class ConfCommandExecutor implements CommandExecutor {
         static final String EPISODE_START = "epstart";
         static final String EPISODE_END = "epend";
         static final String DEATH = "death";
-        static final String START_EP_NUM = "startepnum";
-        static final String MINUTE = "minute";
 
         static final Map<String, String> map = new HashMap<>();
 
@@ -307,8 +305,6 @@ public class ConfCommandExecutor implements CommandExecutor {
             map.put(EPISODE_START, Config.Events.ON_EPISODE_START);
             map.put(EPISODE_END, Config.Events.ON_EPISODE_END);
             map.put(DEATH, Config.Events.ON_DEATH);
-            map.put(START_EP_NUM, Config.Events.ON_START_EP_NUM);
-            map.put(MINUTE, Config.Events.ON_MINUTE);
         }
     }
 

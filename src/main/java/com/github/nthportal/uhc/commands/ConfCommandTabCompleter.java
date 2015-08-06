@@ -23,8 +23,6 @@ public class ConfCommandTabCompleter implements TabCompleter {
         events.add("epStart");
         events.add("epEnd");
         events.add(ConfCommandExecutor.Events.DEATH);
-        events.add("startEpNum");
-        events.add(ConfCommandExecutor.Events.MINUTE);
     }
 
     @Override
