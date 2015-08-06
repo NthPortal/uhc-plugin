@@ -3,6 +3,7 @@ package com.github.nthportal.uhc.core;
 import com.github.nthportal.uhc.UHCPlugin;
 import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.base.Function;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,7 +19,7 @@ import java.util.logging.Level;
 
 public class Timer {
     private final UHCPlugin plugin;
-    private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService service;
     private Future<?> episodeFuture;
     private final List<Future<?>> minuteFutures = new ArrayList<>();
     private List<Map<?, ?>> minuteCommands;
@@ -32,6 +33,12 @@ public class Timer {
 
     public Timer(UHCPlugin plugin) {
         this.plugin = plugin;
+
+        service = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("uhc-scheduler")
+                        .build()
+        );
     }
 
     public boolean start() {
