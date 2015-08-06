@@ -51,12 +51,12 @@ public class CommandUtil {
                 try {
                     String key = entry.getKey().toString();
                     String command = entry.getValue().toString();
-                    int epNum = Integer.parseInt(key);
-                    if (epNum == toMatch) {
-                        CommandUtil.executeCommand(plugin, command);
+                    int num = Integer.parseInt(key);
+                    if (num == toMatch) {
+                        executeCommand(plugin, command);
                     }
                 } catch (NumberFormatException e) {
-                    plugin.logger.log(Level.WARNING, "onStartEpNum entries must have integer keys");
+                    plugin.logger.log(Level.WARNING, event + " entries must have integer keys");
                 }
             }
         }
