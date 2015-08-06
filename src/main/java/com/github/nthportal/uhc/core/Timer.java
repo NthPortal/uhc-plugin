@@ -194,6 +194,16 @@ public class Timer {
         }
     }
 
+    private void onMinute() {
+        lock.readLock().lock();
+        try {
+            minute++;
+            CommandUtil.executeMappedCommandsMatching(plugin, Config.Events.ON_MINUTE, minute);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     // Event handling stuff
 
     private void onStart() {
@@ -239,11 +249,6 @@ public class Timer {
         List<Function<String, String>> replacements = new ArrayList<>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(mark)));
         CommandUtil.executeEventCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
-    }
-
-    private void onMinute() {
-        minute++;
-        CommandUtil.executeMappedCommandsMatching(plugin, Config.Events.ON_MINUTE, minute);
     }
 
     public enum State {
