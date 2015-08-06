@@ -1,17 +1,30 @@
 package com.github.nthportal.uhc.util;
 
 import com.github.nthportal.uhc.UHCPlugin;
-import com.github.nthportal.uhc.core.Config;
 import com.google.common.base.Function;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.bukkit.Server;
 import org.bukkit.command.CommandException;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 public class CommandUtil {
+    private static final ExecutorService SERVICE;
+
+    static {
+        SERVICE = Executors.newSingleThreadExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("uhc-plugin-cmd-executor")
+                        .build()
+        );
+
+    }
+
     public static void executeEventCommands(UHCPlugin plugin, String event) {
         executeEventCommands(plugin, event, Collections.<Function<String, String>>emptyList());
     }
@@ -49,16 +62,21 @@ public class CommandUtil {
         }
     }
 
-    public static void executeCommand(UHCPlugin plugin, String command) {
-        Server server = plugin.getServer();
-        try {
-            server.dispatchCommand(server.getConsoleSender(), command);
-        }
-        // Why is this a RuntimeException?
-        // It's not in my control if someone else doesn't know how to code their CommandExecutor
-        catch (CommandException e) {
-            plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
-        }
+    public static void executeCommand(final UHCPlugin plugin, final String command) {
+        SERVICE.execute(new Runnable() {
+            @Override
+            public void run() {
+                Server server = plugin.getServer();
+                try {
+                    server.dispatchCommand(server.getConsoleSender(), command);
+                }
+                // Why is this a RuntimeException?
+                // It's not in my control if someone else doesn't know how to code their CommandExecutor
+                catch (CommandException e) {
+                    plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
+                }
+            }
+        });
     }
 
     public static Function<String, String> replacementFunction(final String target, final String replacement) {
