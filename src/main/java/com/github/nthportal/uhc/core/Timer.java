@@ -48,7 +48,7 @@ public class Timer {
                 return false;
             }
 
-            interval = plugin.getConfig().getInt(Config.EPISODE_TIME);
+            interval = getValidatedEpisodeLength();
             countdown();
             originalStartTime = System.currentTimeMillis();
             episodeFuture = service.scheduleAtFixedRate(new Runnable() {
@@ -102,7 +102,7 @@ public class Timer {
         }
     }
 
-    public synchronized boolean stop() {
+    public boolean stop() {
         lock.writeLock().lock();
         try {
             if (state == State.STOPPED) {
@@ -127,7 +127,7 @@ public class Timer {
         }
     }
 
-    public synchronized boolean pause() {
+    public boolean pause() {
         lock.writeLock().lock();
         try {
             if (state != State.RUNNING) {
@@ -150,7 +150,7 @@ public class Timer {
         }
     }
 
-    public synchronized boolean resume() {
+    public boolean resume() {
         lock.writeLock().lock();
         try {
             if (state != State.PAUSED) {
@@ -231,6 +231,16 @@ public class Timer {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    private int getValidatedEpisodeLength() {
+        int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
+        if (length <= 0) {
+            length = Config.DEFAULT_EPISODE_TIME;
+            plugin.getConfig().set(Config.EPISODE_TIME, length);
+            plugin.saveConfig();
+        }
+        return length;
     }
 
     private void countdown() {

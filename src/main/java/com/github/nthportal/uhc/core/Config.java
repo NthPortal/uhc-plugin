@@ -10,11 +10,14 @@ public class Config {
     public static final String EPISODE_TIME = "episodeTime";
     public static final String COUNTDOWN_FROM = "countdownFrom";
 
+    public static final int DEFAULT_EPISODE_TIME = 20;
+    public static final int DEFAULT_COUNTDOWN_FROM = 5;
+
     public static void setup(UHCPlugin plugin) {
         FileConfiguration config = plugin.getConfig();
 
-        config.addDefault(EPISODE_TIME, 20);
-        config.addDefault(COUNTDOWN_FROM, 5);
+        config.addDefault(EPISODE_TIME, DEFAULT_EPISODE_TIME);
+        config.addDefault(COUNTDOWN_FROM, DEFAULT_COUNTDOWN_FROM);
 
         List<String> emptyList = Collections.emptyList();
         config.addDefault(Events.ON_COUNTDOWN_START, emptyList);
