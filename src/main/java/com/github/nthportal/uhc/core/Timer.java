@@ -1,6 +1,7 @@
 package com.github.nthportal.uhc.core;
 
 import com.github.nthportal.uhc.UHCPlugin;
+import com.github.nthportal.uhc.events.*;
 import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -142,7 +143,7 @@ public class Timer {
             }
             minuteFutures.clear();
 
-            onPause();
+            onPause(elapsedTime);
             state = State.PAUSED;
             return true;
         } finally {
@@ -196,9 +197,10 @@ public class Timer {
                 }
             }
 
+            onResume(elapsedTime);
+
             elapsedTime = 0;
 
-            onResume();
             state = State.RUNNING;
             return true;
         } finally {
@@ -244,8 +246,8 @@ public class Timer {
     }
 
     private void countdown() {
-        onCountdownStart();
         int countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
+        onCountdownStart(countdownFrom);
         for (int i = 0; i < countdownFrom; i++) {
             onCountdownMark(countdownFrom - i);
             try {
@@ -270,52 +272,38 @@ public class Timer {
     // Event handling stuff
 
     private void onStart() {
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_START);
+        plugin.eventBus.post(new UHCStartEvent());
     }
 
     private void onStop() {
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_STOP);
+        plugin.eventBus.post(new UHCStopEvent());
     }
 
-    private void onPause() {
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_PAUSE);
+    private void onPause(long timeElapsed) {
+        plugin.eventBus.post(new UHCPauseEvent(timeElapsed));
     }
 
-    private void onResume() {
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_RESUME);
+    private void onResume(long timeElapsed) {
+        plugin.eventBus.post(new UHCResumeEvent(timeElapsed));
     }
 
     private void onEpisodeStart() {
-        final int minutes = interval * (episode - 1);
-        List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(episode)));
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(minutes)));
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_EPISODE_START, replacements);
-
-        // Run episode-specific commands
-        CommandUtil.executeMappedCommandsMatching(plugin, Config.Events.ON_START_EP_NUM, episode);
+        plugin.eventBus.post(new UHCEpisodeStartEvent(episode, interval));
     }
 
     private void onEpisodeEnd() {
-        final int minutes = interval * episode;
-        List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(episode)));
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(minutes)));
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_EPISODE_END, replacements);
+        plugin.eventBus.post(new UHCEpisodeEndEvent(episode, interval));
     }
 
-    private void onCountdownStart() {
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_COUNTDOWN_START);
+    private void onCountdownStart(int countingFrom) {
+        plugin.eventBus.post(new UHCCountdownStartEvent(countingFrom));
     }
 
-    private void onCountdownMark(final int mark) {
-        List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(mark)));
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
+    private void onCountdownMark(int mark) {
+        plugin.eventBus.post(new UHCCountdownMarkEvent(mark));
     }
 
     public enum State {
         STOPPED, RUNNING, PAUSED
     }
-
 }

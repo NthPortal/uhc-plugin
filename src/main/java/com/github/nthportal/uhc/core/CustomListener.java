@@ -1,6 +1,7 @@
 package com.github.nthportal.uhc.core;
 
 import com.github.nthportal.uhc.UHCPlugin;
+import com.github.nthportal.uhc.events.UHCPlayerDeathEvent;
 import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.base.Function;
 import org.bukkit.event.EventHandler;
@@ -23,8 +24,7 @@ public class CustomListener implements Listener {
             return;
         }
 
-        List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.PLAYER, event.getEntity().getName()));
-        CommandUtil.executeEventCommands(plugin, Config.Events.ON_DEATH, replacements);
+        plugin.logger.info("Player died: " + event.getEntity().getName());
+        plugin.eventBus.post(new UHCPlayerDeathEvent(event.getEntity()));
     }
 }
