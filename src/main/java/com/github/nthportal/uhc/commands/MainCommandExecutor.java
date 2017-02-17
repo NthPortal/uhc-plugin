@@ -1,16 +1,29 @@
 package com.github.nthportal.uhc.commands;
 
 import com.github.nthportal.uhc.UHCPlugin;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc";
     public static final String PERMISSION = "uhc-plugin.uhc";
+
+    private static final ExecutorService SERVICE;
+
+    static {
+        SERVICE = Executors.newSingleThreadExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("uhc-plugin-uhc-starter")
+                        .build()
+        );
+    }
 
     private final UHCPlugin plugin;
 
@@ -19,7 +32,7 @@ public class MainCommandExecutor implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String label, String[] strings) {
+    public boolean onCommand(final CommandSender commandSender, Command command, String label, String[] strings) {
         if ((strings.length == 0) || (strings.length > 1) || !commandSender.hasPermission(PERMISSION)) {
             return false;
         }
@@ -28,8 +41,12 @@ public class MainCommandExecutor implements CommandExecutor {
         switch (strings[0].toLowerCase()) {
             case Opts.START:
                 commandSender.sendMessage("Starting UHC...");
-                success = plugin.timer.start();
-                commandSender.sendMessage(success ? "Started UHC" : "Unable to start UHC - UHC paused or already running");
+                SERVICE.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        commandSender.sendMessage(plugin.timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused or already running");
+                    }
+                });
                 break;
             case Opts.STOP:
                 success = plugin.timer.stop();

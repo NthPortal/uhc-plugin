@@ -3,14 +3,12 @@ package com.github.nthportal.uhc.util;
 import com.github.nthportal.uhc.UHCPlugin;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.bukkit.Server;
-import org.bukkit.command.CommandException;
+import org.bukkit.Bukkit;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 
 public class CommandUtil {
@@ -22,7 +20,6 @@ public class CommandUtil {
                         .setNameFormat("uhc-plugin-cmd-executor")
                         .build()
         );
-
     }
 
     public static void executeEventCommands(UHCPlugin plugin, String event) {
@@ -63,16 +60,23 @@ public class CommandUtil {
     }
 
     public static void executeCommand(final UHCPlugin plugin, final String command) {
-        SERVICE.execute(new Runnable() {
+        plugin.logger.log(Level.INFO, "Executing command: " + command);
+        final Future<Void> future = Bukkit.getScheduler().callSyncMethod(plugin, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                return null;
+            }
+        });
+
+        // Have something else log Exceptions, to help keep things going
+        SERVICE.submit(new Runnable() {
             @Override
             public void run() {
-                Server server = plugin.getServer();
                 try {
-                    server.dispatchCommand(server.getConsoleSender(), command);
+                    future.get();
                 }
-                // Why is this a RuntimeException?
-                // It's not in my control if someone else doesn't know how to code their CommandExecutor
-                catch (CommandException e) {
+                catch (ExecutionException | InterruptedException e) {
                     plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
                 }
             }
