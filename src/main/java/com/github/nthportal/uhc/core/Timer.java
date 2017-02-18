@@ -19,8 +19,9 @@ import java.util.logging.Level;
 public class Timer {
     private final Context context;
     private final ScheduledExecutorService service;
-    private Future<?> episodeFuture;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private final List<Future<?>> minuteFutures = new ArrayList<>();
+    private Future<?> episodeFuture;
     private List<Map<?, ?>> minuteCommands;
     private State state = State.STOPPED;
     private int interval;
@@ -28,7 +29,6 @@ public class Timer {
     private long originalStartTime;
     private long effectiveStartTime;
     private long elapsedTime = 0;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     Timer(Context context) {
         this.context = context;
@@ -235,7 +235,7 @@ public class Timer {
 
     private int getValidatedEpisodeLength() {
         UHCPlugin plugin = context.plugin();
-        
+
         int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
         if (length <= 0) {
             length = Config.DEFAULT_EPISODE_TIME;

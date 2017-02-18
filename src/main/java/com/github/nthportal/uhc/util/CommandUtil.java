@@ -75,8 +75,7 @@ public class CommandUtil {
             public void run() {
                 try {
                     future.get();
-                }
-                catch (ExecutionException | InterruptedException e) {
+                } catch (ExecutionException | InterruptedException e) {
                     context.logger().log(Level.WARNING, "Exception running command: " + command, e);
                 }
             }
