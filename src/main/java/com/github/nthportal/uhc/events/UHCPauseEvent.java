@@ -1,9 +1,10 @@
 package com.github.nthportal.uhc.events;
 
-public class UHCPauseEvent {
-    public final long timeElapsed;
+import lombok.Value;
+import lombok.experimental.Accessors;
 
-    public UHCPauseEvent(long timeElapsed) {
-        this.timeElapsed = timeElapsed;
-    }
+@Value
+@Accessors(fluent = true)
+public class UHCPauseEvent {
+    long timeElapsed;
 }

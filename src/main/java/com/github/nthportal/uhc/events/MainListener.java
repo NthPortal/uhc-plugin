@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainListener {
-    public final UHCPlugin plugin;
+    private final UHCPlugin plugin;
 
     public MainListener(UHCPlugin plugin) {
         this.plugin = plugin;
@@ -19,7 +19,7 @@ public class MainListener {
     @Subscribe
     public void onPlayerDeath(UHCPlayerDeathEvent event) {
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.PLAYER, event.player.getName()));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.PLAYER, event.player().getName()));
         CommandUtil.executeEventCommands(plugin, Config.Events.ON_DEATH, replacements);
     }
 
@@ -31,7 +31,7 @@ public class MainListener {
     @Subscribe
     public void onCountdownMark(UHCCountdownMarkEvent event) {
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(event.countdownMark)));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(event.countdownMark())));
         CommandUtil.executeEventCommands(plugin, Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 
@@ -58,19 +58,19 @@ public class MainListener {
     @Subscribe
     public void onEpisodeStart(UHCEpisodeStartEvent event) {
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.getEpisodeNumber())));
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.getMinutesElapsed())));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
         CommandUtil.executeEventCommands(plugin, Config.Events.ON_EPISODE_START, replacements);
 
         // Run episode-specific commands
-        CommandUtil.executeMappedCommandsMatching(plugin, Config.Events.ON_START_EP_NUM, event.getEpisodeNumber());
+        CommandUtil.executeMappedCommandsMatching(plugin, Config.Events.ON_START_EP_NUM, event.episodeNumber());
     }
 
     @Subscribe
     public void onEpisdeEnd(UHCEpisodeEndEvent event) {
         List<Function<String, String>> replacements = new ArrayList<>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.getEpisodeNumber())));
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.getMinutesElapsed())));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
+        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
         CommandUtil.executeEventCommands(plugin, Config.Events.ON_EPISODE_END, replacements);
     }
 }
