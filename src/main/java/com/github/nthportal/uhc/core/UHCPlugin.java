@@ -5,6 +5,7 @@ import com.github.nthportal.uhc.commands.ConfCommandTabCompleter;
 import com.github.nthportal.uhc.commands.MainCommandExecutor;
 import com.github.nthportal.uhc.commands.MainCommandTabCompleter;
 import com.github.nthportal.uhc.events.MainListener;
+import com.github.nthportal.uhc.util.CommandExecutor;
 import com.google.common.eventbus.EventBus;
 import lombok.val;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,7 +16,8 @@ public final class UHCPlugin extends JavaPlugin {
     private final Logger logger = getLogger();
     private final EventBus eventBus = new EventBus("UHC-Plugin");
     private final Context context = new Context(this, logger, eventBus);
-    private final Timer timer = new Timer(context);
+    private final CommandExecutor executor = new CommandExecutor(context);
+    private final Timer timer = new Timer(context, executor);
 
     @Override
     public void onEnable() {
@@ -31,7 +33,7 @@ public final class UHCPlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new DeathListener(context, timer), this);
 
-        eventBus.register(new MainListener(context));
+        eventBus.register(new MainListener(executor));
     }
 
     @Override

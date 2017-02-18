@@ -1,8 +1,7 @@
 package com.github.nthportal.uhc.events;
 
 import com.github.nthportal.uhc.core.Config;
-import com.github.nthportal.uhc.core.Context;
-import com.github.nthportal.uhc.util.CommandUtil;
+import com.github.nthportal.uhc.util.CommandExecutor;
 import com.google.common.eventbus.Subscribe;
 import lombok.AllArgsConstructor;
 import lombok.val;
@@ -10,65 +9,67 @@ import lombok.val;
 import java.util.ArrayList;
 import java.util.function.Function;
 
+import static com.github.nthportal.uhc.util.CommandExecutor.*;
+
 @AllArgsConstructor
 public class MainListener {
-    private final Context context;
+    private final CommandExecutor executor;
 
     @Subscribe
     public void onPlayerDeath(UHCPlayerDeathEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.PLAYER, event.player().getName()));
-        CommandUtil.executeEventCommands(context, Config.Events.ON_DEATH, replacements);
+        replacements.add(replacement(ReplaceTargets.PLAYER, event.player().getName()));
+        executor.executeEventCommands(Config.Events.ON_DEATH, replacements);
     }
 
     @Subscribe
     public void onCountdownStart(UHCCountdownStartEvent event) {
-        CommandUtil.executeEventCommands(context, Config.Events.ON_COUNTDOWN_START);
+        executor.executeEventCommands(Config.Events.ON_COUNTDOWN_START);
     }
 
     @Subscribe
     public void onCountdownMark(UHCCountdownMarkEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(event.countdownMark())));
-        CommandUtil.executeEventCommands(context, Config.Events.ON_COUNTDOWN_MARK, replacements);
+        replacements.add(replacement(ReplaceTargets.COUNTDOWN_MARK, String.valueOf(event.countdownMark())));
+        executor.executeEventCommands(Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 
     @Subscribe
     public void onStart(UHCStartEvent event) {
-        CommandUtil.executeEventCommands(context, Config.Events.ON_START);
+        executor.executeEventCommands(Config.Events.ON_START);
     }
 
     @Subscribe
     public void onStop(UHCStopEvent event) {
-        CommandUtil.executeEventCommands(context, Config.Events.ON_STOP);
+        executor.executeEventCommands(Config.Events.ON_STOP);
     }
 
     @Subscribe
     public void onPause(UHCPauseEvent event) {
-        CommandUtil.executeEventCommands(context, Config.Events.ON_PAUSE);
+        executor.executeEventCommands(Config.Events.ON_PAUSE);
     }
 
     @Subscribe
     public void onResume(UHCResumeEvent event) {
-        CommandUtil.executeEventCommands(context, Config.Events.ON_RESUME);
+        executor.executeEventCommands(Config.Events.ON_RESUME);
     }
 
     @Subscribe
     public void onEpisodeStart(UHCEpisodeStartEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
-        CommandUtil.executeEventCommands(context, Config.Events.ON_EPISODE_START, replacements);
+        replacements.add(replacement(ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
+        replacements.add(replacement(ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
+        executor.executeEventCommands(Config.Events.ON_EPISODE_START, replacements);
 
         // Run episode-specific commands
-        CommandUtil.executeMappedCommandsMatching(context, Config.Events.ON_START_EP_NUM, event.episodeNumber());
+        executor.executeMappedCommandsMatching(Config.Events.ON_START_EP_NUM, event.episodeNumber());
     }
 
     @Subscribe
     public void onEpisdeEnd(UHCEpisodeEndEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
-        replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
-        CommandUtil.executeEventCommands(context, Config.Events.ON_EPISODE_END, replacements);
+        replacements.add(replacement(ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
+        replacements.add(replacement(ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
+        executor.executeEventCommands(Config.Events.ON_EPISODE_END, replacements);
     }
 }

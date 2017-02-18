@@ -1,7 +1,7 @@
 package com.github.nthportal.uhc.core;
 
 import com.github.nthportal.uhc.events.*;
-import com.github.nthportal.uhc.util.CommandUtil;
+import com.github.nthportal.uhc.util.CommandExecutor;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.val;
 
@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 public class Timer {
     private final Context context;
+    private final CommandExecutor commandExecutor;
     private final ScheduledExecutorService service;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private final List<Future<?>> minuteFutures = new ArrayList<>();
@@ -31,8 +32,9 @@ public class Timer {
     private long effectiveStartTime;
     private long elapsedTime = 0;
 
-    Timer(Context context) {
+    Timer(Context context, CommandExecutor commandExecutor) {
         this.context = context;
+        this.commandExecutor = commandExecutor;
 
         service = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
@@ -66,7 +68,7 @@ public class Timer {
                                         context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
                                         return false;
                                     }
-                                    val future = service.schedule(() -> CommandUtil.executeCommand(context, command), min, TimeUnit.MINUTES);
+                                    val future = service.schedule(() -> commandExecutor.executeCommand(command), min, TimeUnit.MINUTES);
                                     minuteFutures.add(future);
                                 } catch (NumberFormatException e) {
                                     context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
@@ -164,7 +166,7 @@ public class Timer {
                                     return false;
                                 }
                                 val timeUntilMinute = minutesInMillis - elapsedTime;
-                                val future = service.schedule(() -> CommandUtil.executeCommand(context, command), timeUntilMinute, TimeUnit.MILLISECONDS);
+                                val future = service.schedule(() -> commandExecutor.executeCommand(command), timeUntilMinute, TimeUnit.MILLISECONDS);
                                 minuteFutures.add(future);
                                 return true;
                             })

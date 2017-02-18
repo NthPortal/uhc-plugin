@@ -13,32 +13,34 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-public class CommandUtil {
-    private static final ExecutorService SERVICE;
+public class CommandExecutor {
+    private final ExecutorService service;
+    private final Context context;
 
-    static {
-        SERVICE = Executors.newSingleThreadExecutor(
+    public CommandExecutor(Context context) {
+        service = Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()
                         .setNameFormat("uhc-plugin-cmd-executor")
                         .build()
         );
+        this.context = context;
     }
 
-    public static void executeEventCommands(Context context, String event) {
-        executeEventCommands(context, event, Collections.emptyList());
+    public void executeEventCommands(String event) {
+        executeEventCommands(event, Collections.emptyList());
     }
 
-    public static void executeEventCommands(Context context, String event, List<Function<String, String>> replaceFunctions) {
+    public void executeEventCommands(String event, List<Function<String, String>> replacements) {
         val commands = context.plugin().getConfig().getStringList(event);
-        val replacer = replaceFunctions.stream().reduce(Function.identity(), Function::andThen);
+        val replacer = replacements.stream().reduce(Function.identity(), Function::andThen);
 
         commands.stream()
                 .map(command -> command.startsWith("/") ? command.substring(1) : command)
                 .map(replacer)
-                .forEach(command -> executeCommand(context, command));
+                .forEach(this::executeCommand);
     }
 
-    public static void executeMappedCommandsMatching(Context context, String event, int toMatch) {
+    public void executeMappedCommandsMatching(String event, int toMatch) {
         val mapList = context.plugin().getConfig().getMapList(event);
         for (val map : mapList) {
             for (val entry : map.entrySet()) {
@@ -47,7 +49,7 @@ public class CommandUtil {
                     val command = entry.getValue().toString();
                     val num = Integer.parseInt(key);
                     if (num == toMatch) {
-                        executeCommand(context, command);
+                        executeCommand(command);
                     }
                 } catch (NumberFormatException e) {
                     context.logger().log(Level.WARNING, event + " entries must have integer keys");
@@ -56,7 +58,7 @@ public class CommandUtil {
         }
     }
 
-    public static void executeCommand(final Context context, final String command) {
+    public void executeCommand(final String command) {
         context.logger().log(Level.INFO, "Executing command: " + command);
         val future = Bukkit.getScheduler().callSyncMethod(context.plugin(), () -> {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
@@ -64,7 +66,7 @@ public class CommandUtil {
         });
 
         // Have something else log Exceptions, to help keep things going
-        SERVICE.submit(() -> {
+        service.submit(() -> {
             try {
                 future.get();
             } catch (ExecutionException | InterruptedException e) {
@@ -73,7 +75,7 @@ public class CommandUtil {
         });
     }
 
-    public static Function<String, String> replacementFunction(final String target, final String replacement) {
+    public static Function<String, String> replacement(final String target, final String replacement) {
         return input -> input.replace(target, replacement);
     }
 
