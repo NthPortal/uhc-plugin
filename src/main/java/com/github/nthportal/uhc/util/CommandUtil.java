@@ -30,17 +30,12 @@ public class CommandUtil {
 
     public static void executeEventCommands(Context context, String event, List<Function<String, String>> replaceFunctions) {
         val commands = context.plugin().getConfig().getStringList(event);
-        for (String command : commands) {
-            if (command.startsWith("/")) {
-                command = command.substring(1);
-            }
-            for (val function : replaceFunctions) {
-                command = function.apply(command);
-            }
+        val replacer = replaceFunctions.stream().reduce(Function.identity(), Function::andThen);
 
-            // Execute command
-            executeCommand(context, command);
-        }
+        commands.stream()
+                .map(command -> command.startsWith("/") ? command.substring(1) : command)
+                .map(replacer)
+                .forEach(command -> executeCommand(context, command));
     }
 
     public static void executeMappedCommandsMatching(Context context, String event, int toMatch) {
