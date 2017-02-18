@@ -1,10 +1,8 @@
 package com.github.nthportal.uhc.core;
 
 import lombok.val;
-import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Collections;
-import java.util.List;
 
 public class Config {
     public static final String EPISODE_TIME = "episodeTime";

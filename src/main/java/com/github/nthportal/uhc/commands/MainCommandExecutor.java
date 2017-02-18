@@ -39,12 +39,7 @@ public class MainCommandExecutor implements CommandExecutor {
         switch (strings[0].toLowerCase()) {
             case Opts.START:
                 commandSender.sendMessage("Starting UHC...");
-                SERVICE.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        commandSender.sendMessage(timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused or already running");
-                    }
-                });
+                SERVICE.submit(() -> commandSender.sendMessage(timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused or already running"));
                 break;
             case Opts.STOP:
                 success = timer.stop();

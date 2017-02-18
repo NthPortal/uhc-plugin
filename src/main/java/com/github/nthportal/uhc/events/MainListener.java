@@ -3,12 +3,12 @@ package com.github.nthportal.uhc.events;
 import com.github.nthportal.uhc.core.Config;
 import com.github.nthportal.uhc.core.Context;
 import com.github.nthportal.uhc.util.CommandUtil;
-import com.google.common.base.Function;
 import com.google.common.eventbus.Subscribe;
 import lombok.AllArgsConstructor;
 import lombok.val;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 @AllArgsConstructor
 public class MainListener {

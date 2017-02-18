@@ -177,7 +177,7 @@ public class ConfCommandExecutor implements CommandExecutor {
 
         // pagination!
         int page = 0;
-        int maxPage = (int) Math.ceil(size / (double) PAGE_ENTRIES);
+        val maxPage = (int) Math.ceil(size / (double) PAGE_ENTRIES);
         if (args.length > 0) {
             try {
                 page = Integer.parseInt(args[0]) - 1;
@@ -308,5 +308,4 @@ public class ConfCommandExecutor implements CommandExecutor {
             map.put(DEATH, Config.Events.ON_DEATH);
         }
     }
-
 }
