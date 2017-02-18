@@ -6,7 +6,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.val;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -16,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class Timer {
     private final Context context;
@@ -51,44 +51,33 @@ public class Timer {
             interval = getValidatedEpisodeLength();
             countdown();
             originalStartTime = System.currentTimeMillis();
-            episodeFuture = service.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    doEpisodeMarker();
-                }
-            }, interval, interval, TimeUnit.MINUTES);
+            episodeFuture = service.scheduleAtFixedRate(this::doEpisodeMarker, interval, interval, TimeUnit.MINUTES);
 
             // Handle onMinute events
             minuteCommands = context.plugin().getConfig().getMapList(Config.Events.ON_MINUTE);
-            for (Iterator<Map<?, ?>> i = minuteCommands.iterator(); i.hasNext(); ) {
-                Map<?, ?> map = i.next();
-                for (Iterator<? extends Map.Entry<?, ?>> j = map.entrySet().iterator(); j.hasNext(); ) {
-                    Map.Entry<?, ?> entry = j.next();
-                    try {
-                        val key = entry.getKey().toString();
-                        val command = entry.getValue().toString();
-                        val min = Integer.parseInt(key);
-                        if (min <= 0) {
-                            context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
-                            j.remove();
-                            break;
-                        }
-                        val future = service.schedule(new Runnable() {
-                            @Override
-                            public void run() {
-                                CommandUtil.executeCommand(context, command);
-                            }
-                        }, min, TimeUnit.MINUTES);
-                        minuteFutures.add(future);
-                    } catch (NumberFormatException e) {
-                        context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
-                        j.remove();
-                    }
-                }
-                if (map.isEmpty()) {
-                    i.remove();
-                }
-            }
+            minuteCommands = minuteCommands.stream()
+                    .map(map -> map.entrySet().stream()
+                            .filter(entry -> {
+                                try {
+                                    val key = entry.getKey().toString();
+                                    val command = entry.getValue().toString();
+                                    val min = Integer.parseInt(key);
+                                    if (min <= 0) {
+                                        context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
+                                        return false;
+                                    }
+                                    val future = service.schedule(() -> CommandUtil.executeCommand(context, command), min, TimeUnit.MINUTES);
+                                    minuteFutures.add(future);
+                                } catch (NumberFormatException e) {
+                                    context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
+                                    return false;
+                                }
+                                return true;
+                            })
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    )
+                    .filter(map -> !map.isEmpty())
+                    .collect(Collectors.toList());
 
             effectiveStartTime = originalStartTime;
             episode = 1;
@@ -161,40 +150,28 @@ public class Timer {
             val timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
 
             effectiveStartTime = System.currentTimeMillis() - elapsedTime;
-            episodeFuture = service.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    doEpisodeMarker();
-                }
-            }, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
+            episodeFuture = service.scheduleAtFixedRate(this::doEpisodeMarker, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
 
             // Handle onMinute events
-            for (Iterator<Map<?, ?>> mapIterator = minuteCommands.iterator(); mapIterator.hasNext(); ) {
-                Map<?, ?> map = mapIterator.next();
-                for (Iterator<? extends Map.Entry<?, ?>> entryIterator = map.entrySet().iterator(); entryIterator.hasNext(); ) {
-                    Map.Entry<?, ?> entry = entryIterator.next();
-
-                    val key = entry.getKey().toString();
-                    val command = entry.getValue().toString();
-                    val min = Integer.parseInt(key);
-                    val minutesInMillis = TimeUnit.MINUTES.toMillis(min);
-                    if (minutesInMillis < elapsedTime) {
-                        entryIterator.remove();
-                        break;
-                    }
-                    val timeUntilMinute = minutesInMillis - elapsedTime;
-                    Future<?> future = service.schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            CommandUtil.executeCommand(context, command);
-                        }
-                    }, timeUntilMinute, TimeUnit.MILLISECONDS);
-                    minuteFutures.add(future);
-                }
-                if (map.isEmpty()) {
-                    mapIterator.remove();
-                }
-            }
+            minuteCommands = minuteCommands.stream()
+                    .map(map -> map.entrySet().stream()
+                            .filter(entry -> {
+                                val key = entry.getKey().toString();
+                                val command = entry.getValue().toString();
+                                val min = Integer.parseInt(key);
+                                val minutesInMillis = TimeUnit.MINUTES.toMillis(min);
+                                if (minutesInMillis < elapsedTime) {
+                                    return false;
+                                }
+                                val timeUntilMinute = minutesInMillis - elapsedTime;
+                                val future = service.schedule(() -> CommandUtil.executeCommand(context, command), timeUntilMinute, TimeUnit.MILLISECONDS);
+                                minuteFutures.add(future);
+                                return true;
+                            })
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    )
+                    .filter(map -> !map.isEmpty())
+                    .collect(Collectors.toList());
 
             onResume(elapsedTime);
 
