@@ -3,7 +3,6 @@ package com.github.nthportal.uhc.core;
 import com.github.nthportal.uhc.UHCPlugin;
 import com.github.nthportal.uhc.events.*;
 import com.github.nthportal.uhc.util.CommandUtil;
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 
 public class Timer {
-    private final UHCPlugin plugin;
+    private final Context context;
     private final ScheduledExecutorService service;
     private Future<?> episodeFuture;
     private final List<Future<?>> minuteFutures = new ArrayList<>();
@@ -32,8 +31,8 @@ public class Timer {
     private long elapsedTime = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public Timer(UHCPlugin plugin) {
-        this.plugin = plugin;
+    public Timer(Context context) {
+        this.context = context;
 
         service = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
@@ -60,7 +59,7 @@ public class Timer {
             }, interval, interval, TimeUnit.MINUTES);
 
             // Handle onMinute events
-            minuteCommands = plugin.getConfig().getMapList(Config.Events.ON_MINUTE);
+            minuteCommands = context.plugin().getConfig().getMapList(Config.Events.ON_MINUTE);
             for (Iterator<Map<?, ?>> i = minuteCommands.iterator(); i.hasNext(); ) {
                 Map<?, ?> map = i.next();
                 for (Iterator<? extends Map.Entry<?, ?>> j = map.entrySet().iterator(); j.hasNext(); ) {
@@ -70,19 +69,19 @@ public class Timer {
                         final String command = entry.getValue().toString();
                         int min = Integer.parseInt(key);
                         if (min <= 0) {
-                            plugin.logger.log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
+                            context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
                             j.remove();
                             break;
                         }
                         Future<?> future = service.schedule(new Runnable() {
                             @Override
                             public void run() {
-                                CommandUtil.executeCommand(plugin, command);
+                                CommandUtil.executeCommand(context, command);
                             }
                         }, min, TimeUnit.MINUTES);
                         minuteFutures.add(future);
                     } catch (NumberFormatException e) {
-                        plugin.logger.log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
+                        context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
                         j.remove();
                     }
                 }
@@ -187,7 +186,7 @@ public class Timer {
                     Future<?> future = service.schedule(new Runnable() {
                         @Override
                         public void run() {
-                            CommandUtil.executeCommand(plugin, command);
+                            CommandUtil.executeCommand(context, command);
                         }
                     }, timeUntilMinute, TimeUnit.MILLISECONDS);
                     minuteFutures.add(future);
@@ -236,6 +235,8 @@ public class Timer {
     }
 
     private int getValidatedEpisodeLength() {
+        UHCPlugin plugin = context.plugin();
+        
         int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
         if (length <= 0) {
             length = Config.DEFAULT_EPISODE_TIME;
@@ -246,6 +247,8 @@ public class Timer {
     }
 
     private void countdown() {
+        UHCPlugin plugin = context.plugin();
+
         int countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
         onCountdownStart(countdownFrom);
         for (int i = 0; i < countdownFrom; i++) {
@@ -253,7 +256,7 @@ public class Timer {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                plugin.logger.log(Level.WARNING, "Sleep interruption in UHC countdown", e);
+                context.logger().log(Level.WARNING, "Sleep interruption in UHC countdown", e);
             }
         }
     }
@@ -272,35 +275,35 @@ public class Timer {
     // Event handling stuff
 
     private void onStart() {
-        plugin.eventBus.post(new UHCStartEvent());
+        context.eventBus().post(new UHCStartEvent());
     }
 
     private void onStop() {
-        plugin.eventBus.post(new UHCStopEvent());
+        context.eventBus().post(new UHCStopEvent());
     }
 
     private void onPause(long timeElapsed) {
-        plugin.eventBus.post(new UHCPauseEvent(timeElapsed));
+        context.eventBus().post(new UHCPauseEvent(timeElapsed));
     }
 
     private void onResume(long timeElapsed) {
-        plugin.eventBus.post(new UHCResumeEvent(timeElapsed));
+        context.eventBus().post(new UHCResumeEvent(timeElapsed));
     }
 
     private void onEpisodeStart() {
-        plugin.eventBus.post(new UHCEpisodeStartEvent(episode, interval));
+        context.eventBus().post(new UHCEpisodeStartEvent(episode, interval));
     }
 
     private void onEpisodeEnd() {
-        plugin.eventBus.post(new UHCEpisodeEndEvent(episode, interval));
+        context.eventBus().post(new UHCEpisodeEndEvent(episode, interval));
     }
 
     private void onCountdownStart(int countingFrom) {
-        plugin.eventBus.post(new UHCCountdownStartEvent(countingFrom));
+        context.eventBus().post(new UHCCountdownStartEvent(countingFrom));
     }
 
     private void onCountdownMark(int mark) {
-        plugin.eventBus.post(new UHCCountdownMarkEvent(mark));
+        context.eventBus().post(new UHCCountdownMarkEvent(mark));
     }
 
     public enum State {

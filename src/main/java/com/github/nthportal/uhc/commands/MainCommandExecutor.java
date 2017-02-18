@@ -1,7 +1,8 @@
 package com.github.nthportal.uhc.commands;
 
-import com.github.nthportal.uhc.UHCPlugin;
+import com.github.nthportal.uhc.core.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@AllArgsConstructor
 public class MainCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc";
     public static final String PERMISSION = "uhc-plugin.uhc";
@@ -25,11 +27,7 @@ public class MainCommandExecutor implements CommandExecutor {
         );
     }
 
-    private final UHCPlugin plugin;
-
-    public MainCommandExecutor(final UHCPlugin plugin) {
-        this.plugin = plugin;
-    }
+    private final Timer timer;
 
     @Override
     public boolean onCommand(final CommandSender commandSender, Command command, String label, String[] strings) {
@@ -44,20 +42,20 @@ public class MainCommandExecutor implements CommandExecutor {
                 SERVICE.submit(new Runnable() {
                     @Override
                     public void run() {
-                        commandSender.sendMessage(plugin.timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused or already running");
+                        commandSender.sendMessage(timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused or already running");
                     }
                 });
                 break;
             case Opts.STOP:
-                success = plugin.timer.stop();
+                success = timer.stop();
                 commandSender.sendMessage(success ? "Stopped UHC" : "Unable to stop UHC - UHC already stopped");
                 break;
             case Opts.PAUSE:
-                success = plugin.timer.pause();
+                success = timer.pause();
                 commandSender.sendMessage(success ? "Paused UHC" : "Unable to pause UHC - UHC not running or already paused");
                 break;
             case Opts.RESUME:
-                success = plugin.timer.resume();
+                success = timer.resume();
                 commandSender.sendMessage(success ? "Resumed UHC" : "Unable to resume UHC - UHC not paused");
                 break;
             default:

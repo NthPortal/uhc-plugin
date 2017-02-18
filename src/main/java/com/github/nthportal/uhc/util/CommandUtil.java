@@ -1,6 +1,6 @@
 package com.github.nthportal.uhc.util;
 
-import com.github.nthportal.uhc.UHCPlugin;
+import com.github.nthportal.uhc.core.Context;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.bukkit.Bukkit;
@@ -22,12 +22,12 @@ public class CommandUtil {
         );
     }
 
-    public static void executeEventCommands(UHCPlugin plugin, String event) {
-        executeEventCommands(plugin, event, Collections.<Function<String, String>>emptyList());
+    public static void executeEventCommands(Context context, String event) {
+        executeEventCommands(context, event, Collections.<Function<String, String>>emptyList());
     }
 
-    public static void executeEventCommands(UHCPlugin plugin, String event, List<Function<String, String>> replaceFunctions) {
-        List<String> commands = plugin.getConfig().getStringList(event);
+    public static void executeEventCommands(Context context, String event, List<Function<String, String>> replaceFunctions) {
+        List<String> commands = context.plugin().getConfig().getStringList(event);
         for (String command : commands) {
             if (command.startsWith("/")) {
                 command = command.substring(1);
@@ -37,12 +37,12 @@ public class CommandUtil {
             }
 
             // Execute command
-            executeCommand(plugin, command);
+            executeCommand(context, command);
         }
     }
 
-    public static void executeMappedCommandsMatching(UHCPlugin plugin, String event, int toMatch) {
-        List<Map<?, ?>> mapList = plugin.getConfig().getMapList(event);
+    public static void executeMappedCommandsMatching(Context context, String event, int toMatch) {
+        List<Map<?, ?>> mapList = context.plugin().getConfig().getMapList(event);
         for (Map<?, ?> map : mapList) {
             for (Map.Entry<?, ?> entry : map.entrySet()) {
                 try {
@@ -50,18 +50,18 @@ public class CommandUtil {
                     String command = entry.getValue().toString();
                     int num = Integer.parseInt(key);
                     if (num == toMatch) {
-                        executeCommand(plugin, command);
+                        executeCommand(context, command);
                     }
                 } catch (NumberFormatException e) {
-                    plugin.logger.log(Level.WARNING, event + " entries must have integer keys");
+                    context.logger().log(Level.WARNING, event + " entries must have integer keys");
                 }
             }
         }
     }
 
-    public static void executeCommand(final UHCPlugin plugin, final String command) {
-        plugin.logger.log(Level.INFO, "Executing command: " + command);
-        final Future<Void> future = Bukkit.getScheduler().callSyncMethod(plugin, new Callable<Void>() {
+    public static void executeCommand(final Context context, final String command) {
+        context.logger().log(Level.INFO, "Executing command: " + command);
+        final Future<Void> future = Bukkit.getScheduler().callSyncMethod(context.plugin(), new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
@@ -77,7 +77,7 @@ public class CommandUtil {
                     future.get();
                 }
                 catch (ExecutionException | InterruptedException e) {
-                    plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
+                    context.logger().log(Level.WARNING, "Exception running command: " + command, e);
                 }
             }
         });
