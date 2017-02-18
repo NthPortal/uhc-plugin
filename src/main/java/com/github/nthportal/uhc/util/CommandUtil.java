@@ -30,7 +30,7 @@ public class CommandUtil {
 
     public static void executeEventCommands(Context context, String event, List<Function<String, String>> replaceFunctions) {
         val commands = context.plugin().getConfig().getStringList(event);
-        for (val command : commands) {
+        for (String command : commands) {
             if (command.startsWith("/")) {
                 command = command.substring(1);
             }
