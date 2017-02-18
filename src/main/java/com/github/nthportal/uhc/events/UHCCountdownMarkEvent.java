@@ -1,9 +1,10 @@
 package com.github.nthportal.uhc.events;
 
-public class UHCCountdownMarkEvent {
-    public final int countdownMark;
+import lombok.Value;
+import lombok.experimental.Accessors;
 
-    public UHCCountdownMarkEvent(int countdownMark) {
-        this.countdownMark = countdownMark;
-    }
+@Value
+@Accessors(fluent = true)
+public class UHCCountdownMarkEvent {
+    int countdownMark;
 }

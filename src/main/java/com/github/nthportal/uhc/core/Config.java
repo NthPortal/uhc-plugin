@@ -1,10 +1,8 @@
 package com.github.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.UHCPlugin;
-import org.bukkit.configuration.file.FileConfiguration;
+import lombok.val;
 
 import java.util.Collections;
-import java.util.List;
 
 public class Config {
     public static final String EPISODE_TIME = "episodeTime";
@@ -14,12 +12,13 @@ public class Config {
     public static final int DEFAULT_COUNTDOWN_FROM = 5;
 
     public static void setup(UHCPlugin plugin) {
-        FileConfiguration config = plugin.getConfig();
+        val config = plugin.getConfig();
 
         config.addDefault(EPISODE_TIME, DEFAULT_EPISODE_TIME);
         config.addDefault(COUNTDOWN_FROM, DEFAULT_COUNTDOWN_FROM);
 
-        List<String> emptyList = Collections.emptyList();
+        val emptyList = Collections.emptyList();
+        val emptyMap = Collections.emptyMap();
         config.addDefault(Events.ON_COUNTDOWN_START, emptyList);
         config.addDefault(Events.ON_COUNTDOWN_MARK, emptyList);
         config.addDefault(Events.ON_START, emptyList);
@@ -29,8 +28,8 @@ public class Config {
         config.addDefault(Events.ON_EPISODE_START, emptyList);
         config.addDefault(Events.ON_EPISODE_END, emptyList);
         config.addDefault(Events.ON_DEATH, emptyList);
-        config.addDefault(Events.ON_START_EP_NUM, Collections.<String, String>emptyMap());
-        config.addDefault(Events.ON_MINUTE, Collections.<String, String>emptyMap());
+        config.addDefault(Events.ON_START_EP_NUM, emptyMap);
+        config.addDefault(Events.ON_MINUTE, emptyMap);
 
         config.options().copyDefaults(true);
         plugin.saveConfig();

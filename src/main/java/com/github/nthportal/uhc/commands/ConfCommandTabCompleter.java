@@ -25,6 +25,18 @@ public class ConfCommandTabCompleter implements TabCompleter {
         events.add(ConfCommandExecutor.Events.DEATH);
     }
 
+    private static boolean condition2(String[] args) {
+        return args[0].equalsIgnoreCase(ConfCommandExecutor.Opts.ON);
+    }
+
+    private static boolean condition3(String[] args) {
+        return ConfCommandExecutor.Events.map.containsKey(args[1].toLowerCase());
+    }
+
+    private static boolean condition4(String[] args) {
+        return args[2].equalsIgnoreCase(ConfCommandExecutor.Opts.ADD);
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         switch (args.length) {
@@ -46,17 +58,5 @@ public class ConfCommandTabCompleter implements TabCompleter {
                 }
         }
         return Collections.emptyList();
-    }
-
-    private static boolean condition2(String[] args) {
-        return args[0].equalsIgnoreCase(ConfCommandExecutor.Opts.ON);
-    }
-
-    private static boolean condition3(String[] args) {
-        return ConfCommandExecutor.Events.map.containsKey(args[1].toLowerCase());
-    }
-
-    private static boolean condition4(String[] args) {
-        return args[2].equalsIgnoreCase(ConfCommandExecutor.Opts.ADD);
     }
 }

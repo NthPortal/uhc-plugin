@@ -1,11 +1,11 @@
 package com.github.nthportal.uhc.events;
 
+import lombok.Value;
+import lombok.experimental.Accessors;
 import org.bukkit.entity.Player;
 
+@Value
+@Accessors(fluent = true)
 public class UHCPlayerDeathEvent {
-    public final Player player;
-
-    public UHCPlayerDeathEvent(Player player) {
-        this.player = player;
-    }
+    Player player;
 }

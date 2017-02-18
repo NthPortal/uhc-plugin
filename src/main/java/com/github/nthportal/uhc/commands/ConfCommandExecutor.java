@@ -1,8 +1,9 @@
 package com.github.nthportal.uhc.commands;
 
-import com.github.nthportal.uhc.UHCPlugin;
 import com.github.nthportal.uhc.core.Config;
+import com.github.nthportal.uhc.core.UHCPlugin;
 import com.google.common.base.Joiner;
+import lombok.val;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -45,7 +46,7 @@ public class ConfCommandExecutor implements CommandExecutor {
     }
 
     private void doHelp(CommandSender commandSender, Command command) {
-        String name = command.getName();
+        val name = command.getName();
         commandSender.sendMessage("-------- " + name + " help --------");
         commandSender.sendMessage("/" + name + " " + Opts.RELOAD + " - reloads configuration from file");
         commandSender.sendMessage("/" + name + " " + Opts.ON + " {EVENT} " + Opts.ADD
@@ -77,7 +78,7 @@ public class ConfCommandExecutor implements CommandExecutor {
             commandSender.sendMessage("Invalid sub-command: " + args[0]);
             return false;
         }
-        String onEvent = Events.map.get(event);
+        val onEvent = Events.map.get(event);
 
         switch (args[1].toLowerCase()) {
             case Opts.ADD:
@@ -102,9 +103,9 @@ public class ConfCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        String location = args[0].toLowerCase();
-        List<String> commands = plugin.getConfig().getStringList(event);
-        String newCommand = Joiner.on(" ").join(Arrays.copyOfRange(args, 1, args.length));
+        val location = args[0].toLowerCase();
+        val commands = plugin.getConfig().getStringList(event);
+        val newCommand = Joiner.on(" ").join(Arrays.copyOfRange(args, 1, args.length));
 
         switch (location) {
             case Opts.LAST:
@@ -115,7 +116,7 @@ public class ConfCommandExecutor implements CommandExecutor {
                 break;
             default:
                 try {
-                    int index = Integer.parseInt(location) - 1;
+                    val index = Integer.parseInt(location) - 1;
                     if ((index < 0) || (index > commands.size())) {
                         commandSender.sendMessage("Specified index out of range. Valid range: 1 - " + (commands.size() + 1));
                         return false;
@@ -141,7 +142,7 @@ public class ConfCommandExecutor implements CommandExecutor {
 
         List<String> commands = plugin.getConfig().getStringList(event);
         try {
-            int index = Integer.parseInt(args[0]) - 1;
+            val index = Integer.parseInt(args[0]) - 1;
             if ((index < 0) || (index > commands.size())) {
                 commandSender.sendMessage("Specified index out of range. Valid range: 1 - " + commands.size());
                 return false;
@@ -166,9 +167,9 @@ public class ConfCommandExecutor implements CommandExecutor {
     }
 
     private boolean doList(CommandSender commandSender, String event, String[] args) {
-        List<String> commands = plugin.getConfig().getStringList(event);
+        val commands = plugin.getConfig().getStringList(event);
 
-        int size = commands.size();
+        val size = commands.size();
         if (size == 0) {
             commandSender.sendMessage("No commands set to run " + event);
             return true;
@@ -176,7 +177,7 @@ public class ConfCommandExecutor implements CommandExecutor {
 
         // pagination!
         int page = 0;
-        int maxPage = (int) Math.ceil(size / (double) PAGE_ENTRIES);
+        val maxPage = (int) Math.ceil(size / (double) PAGE_ENTRIES);
         if (args.length > 0) {
             try {
                 page = Integer.parseInt(args[0]) - 1;
@@ -205,8 +206,8 @@ public class ConfCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        List<String> commands = plugin.getConfig().getStringList(event);
-        int size = commands.size();
+        val commands = plugin.getConfig().getStringList(event);
+        val size = commands.size();
 
         int target;
         int dest;
@@ -307,5 +308,4 @@ public class ConfCommandExecutor implements CommandExecutor {
             map.put(DEATH, Config.Events.ON_DEATH);
         }
     }
-
 }

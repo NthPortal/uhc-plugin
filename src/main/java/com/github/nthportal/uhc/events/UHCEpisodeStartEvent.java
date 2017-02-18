@@ -1,25 +1,15 @@
 package com.github.nthportal.uhc.events;
 
+import lombok.Value;
+import lombok.experimental.Accessors;
+
+@Value
+@Accessors(fluent = true)
 public class UHCEpisodeStartEvent {
-    private final int episodeNumber;
-    private final int episodeLength;
-    private final int minutesElapsed;
+    int episodeNumber;
+    int episodeLength;
 
-    public UHCEpisodeStartEvent(int episodeNumber, int episodeLength) {
-        this.episodeNumber = episodeNumber;
-        this.episodeLength = episodeLength;
-        this.minutesElapsed = episodeLength * (episodeNumber - 1);
-    }
-
-    public int getEpisodeNumber() {
-        return episodeNumber;
-    }
-
-    public int getEpisodeLength() {
-        return episodeLength;
-    }
-
-    public int getMinutesElapsed() {
-        return minutesElapsed;
+    public int minutesElapsed() {
+        return episodeLength * (episodeNumber - 1);
     }
 }

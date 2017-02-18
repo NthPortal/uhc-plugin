@@ -1,14 +1,16 @@
 package com.github.nthportal.uhc.util;
 
-import com.github.nthportal.uhc.UHCPlugin;
-import com.google.common.base.Function;
+import com.github.nthportal.uhc.core.Context;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.val;
 import org.bukkit.Bukkit;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 public class CommandUtil {
@@ -22,74 +24,57 @@ public class CommandUtil {
         );
     }
 
-    public static void executeEventCommands(UHCPlugin plugin, String event) {
-        executeEventCommands(plugin, event, Collections.<Function<String, String>>emptyList());
+    public static void executeEventCommands(Context context, String event) {
+        executeEventCommands(context, event, Collections.emptyList());
     }
 
-    public static void executeEventCommands(UHCPlugin plugin, String event, List<Function<String, String>> replaceFunctions) {
-        List<String> commands = plugin.getConfig().getStringList(event);
-        for (String command : commands) {
-            if (command.startsWith("/")) {
-                command = command.substring(1);
-            }
-            for (Function<String, String> function : replaceFunctions) {
-                command = function.apply(command);
-            }
+    public static void executeEventCommands(Context context, String event, List<Function<String, String>> replaceFunctions) {
+        val commands = context.plugin().getConfig().getStringList(event);
+        val replacer = replaceFunctions.stream().reduce(Function.identity(), Function::andThen);
 
-            // Execute command
-            executeCommand(plugin, command);
-        }
+        commands.stream()
+                .map(command -> command.startsWith("/") ? command.substring(1) : command)
+                .map(replacer)
+                .forEach(command -> executeCommand(context, command));
     }
 
-    public static void executeMappedCommandsMatching(UHCPlugin plugin, String event, int toMatch) {
-        List<Map<?, ?>> mapList = plugin.getConfig().getMapList(event);
-        for (Map<?, ?> map : mapList) {
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
+    public static void executeMappedCommandsMatching(Context context, String event, int toMatch) {
+        val mapList = context.plugin().getConfig().getMapList(event);
+        for (val map : mapList) {
+            for (val entry : map.entrySet()) {
                 try {
-                    String key = entry.getKey().toString();
-                    String command = entry.getValue().toString();
-                    int num = Integer.parseInt(key);
+                    val key = entry.getKey().toString();
+                    val command = entry.getValue().toString();
+                    val num = Integer.parseInt(key);
                     if (num == toMatch) {
-                        executeCommand(plugin, command);
+                        executeCommand(context, command);
                     }
                 } catch (NumberFormatException e) {
-                    plugin.logger.log(Level.WARNING, event + " entries must have integer keys");
+                    context.logger().log(Level.WARNING, event + " entries must have integer keys");
                 }
             }
         }
     }
 
-    public static void executeCommand(final UHCPlugin plugin, final String command) {
-        plugin.logger.log(Level.INFO, "Executing command: " + command);
-        final Future<Void> future = Bukkit.getScheduler().callSyncMethod(plugin, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-                return null;
-            }
+    public static void executeCommand(final Context context, final String command) {
+        context.logger().log(Level.INFO, "Executing command: " + command);
+        val future = Bukkit.getScheduler().callSyncMethod(context.plugin(), () -> {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            return null;
         });
 
         // Have something else log Exceptions, to help keep things going
-        SERVICE.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    future.get();
-                }
-                catch (ExecutionException | InterruptedException e) {
-                    plugin.logger.log(Level.WARNING, "Exception running command: " + command, e);
-                }
+        SERVICE.submit(() -> {
+            try {
+                future.get();
+            } catch (ExecutionException | InterruptedException e) {
+                context.logger().log(Level.WARNING, "Exception running command: " + command, e);
             }
         });
     }
 
     public static Function<String, String> replacementFunction(final String target, final String replacement) {
-        return new Function<String, String>() {
-            @Override
-            public String apply(String input) {
-                return input.replace(target, replacement);
-            }
-        };
+        return input -> input.replace(target, replacement);
     }
 
     public static class ReplaceTargets {

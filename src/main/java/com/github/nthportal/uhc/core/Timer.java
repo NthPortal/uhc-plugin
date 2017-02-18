@@ -1,13 +1,11 @@
 package com.github.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.UHCPlugin;
 import com.github.nthportal.uhc.events.*;
 import com.github.nthportal.uhc.util.CommandUtil;
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.val;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -17,12 +15,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class Timer {
-    private final UHCPlugin plugin;
+    private final Context context;
     private final ScheduledExecutorService service;
-    private Future<?> episodeFuture;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private final List<Future<?>> minuteFutures = new ArrayList<>();
+    private Future<?> episodeFuture;
     private List<Map<?, ?>> minuteCommands;
     private State state = State.STOPPED;
     private int interval;
@@ -30,10 +30,9 @@ public class Timer {
     private long originalStartTime;
     private long effectiveStartTime;
     private long elapsedTime = 0;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public Timer(UHCPlugin plugin) {
-        this.plugin = plugin;
+    Timer(Context context) {
+        this.context = context;
 
         service = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
@@ -52,44 +51,33 @@ public class Timer {
             interval = getValidatedEpisodeLength();
             countdown();
             originalStartTime = System.currentTimeMillis();
-            episodeFuture = service.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    doEpisodeMarker();
-                }
-            }, interval, interval, TimeUnit.MINUTES);
+            episodeFuture = service.scheduleAtFixedRate(this::doEpisodeMarker, interval, interval, TimeUnit.MINUTES);
 
             // Handle onMinute events
-            minuteCommands = plugin.getConfig().getMapList(Config.Events.ON_MINUTE);
-            for (Iterator<Map<?, ?>> i = minuteCommands.iterator(); i.hasNext(); ) {
-                Map<?, ?> map = i.next();
-                for (Iterator<? extends Map.Entry<?, ?>> j = map.entrySet().iterator(); j.hasNext(); ) {
-                    Map.Entry<?, ?> entry = j.next();
-                    try {
-                        String key = entry.getKey().toString();
-                        final String command = entry.getValue().toString();
-                        int min = Integer.parseInt(key);
-                        if (min <= 0) {
-                            plugin.logger.log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
-                            j.remove();
-                            break;
-                        }
-                        Future<?> future = service.schedule(new Runnable() {
-                            @Override
-                            public void run() {
-                                CommandUtil.executeCommand(plugin, command);
-                            }
-                        }, min, TimeUnit.MINUTES);
-                        minuteFutures.add(future);
-                    } catch (NumberFormatException e) {
-                        plugin.logger.log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
-                        j.remove();
-                    }
-                }
-                if (map.isEmpty()) {
-                    i.remove();
-                }
-            }
+            minuteCommands = context.plugin().getConfig().getMapList(Config.Events.ON_MINUTE);
+            minuteCommands = minuteCommands.stream()
+                    .map(map -> map.entrySet().stream()
+                            .filter(entry -> {
+                                try {
+                                    val key = entry.getKey().toString();
+                                    val command = entry.getValue().toString();
+                                    val min = Integer.parseInt(key);
+                                    if (min <= 0) {
+                                        context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
+                                        return false;
+                                    }
+                                    val future = service.schedule(() -> CommandUtil.executeCommand(context, command), min, TimeUnit.MINUTES);
+                                    minuteFutures.add(future);
+                                } catch (NumberFormatException e) {
+                                    context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
+                                    return false;
+                                }
+                                return true;
+                            })
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    )
+                    .filter(map -> !map.isEmpty())
+                    .collect(Collectors.toList());
 
             effectiveStartTime = originalStartTime;
             episode = 1;
@@ -111,7 +99,7 @@ public class Timer {
             }
 
             episodeFuture.cancel(true);
-            for (Future<?> future : minuteFutures) {
+            for (val future : minuteFutures) {
                 future.cancel(true);
             }
             minuteFutures.clear();
@@ -135,10 +123,10 @@ public class Timer {
                 return false;
             }
 
-            long currentTime = System.currentTimeMillis();
+            val currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - effectiveStartTime;
             episodeFuture.cancel(true);
-            for (Future<?> future : minuteFutures) {
+            for (val future : minuteFutures) {
                 future.cancel(true);
             }
             minuteFutures.clear();
@@ -158,44 +146,32 @@ public class Timer {
                 return false;
             }
 
-            long intervalInMillis = TimeUnit.MINUTES.toMillis(interval);
-            long timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
+            val intervalInMillis = TimeUnit.MINUTES.toMillis(interval);
+            val timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
 
             effectiveStartTime = System.currentTimeMillis() - elapsedTime;
-            episodeFuture = service.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    doEpisodeMarker();
-                }
-            }, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
+            episodeFuture = service.scheduleAtFixedRate(this::doEpisodeMarker, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
 
             // Handle onMinute events
-            for (Iterator<Map<?, ?>> i = minuteCommands.iterator(); i.hasNext(); ) {
-                Map<?, ?> map = i.next();
-                for (Iterator<? extends Map.Entry<?, ?>> j = map.entrySet().iterator(); j.hasNext(); ) {
-                    Map.Entry<?, ?> entry = j.next();
-
-                    String key = entry.getKey().toString();
-                    final String command = entry.getValue().toString();
-                    int min = Integer.parseInt(key);
-                    long minutesInMillis = TimeUnit.MINUTES.toMillis(min);
-                    if (minutesInMillis < elapsedTime) {
-                        j.remove();
-                        break;
-                    }
-                    long timeUntilMinute = minutesInMillis - elapsedTime;
-                    Future<?> future = service.schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            CommandUtil.executeCommand(plugin, command);
-                        }
-                    }, timeUntilMinute, TimeUnit.MILLISECONDS);
-                    minuteFutures.add(future);
-                }
-                if (map.isEmpty()) {
-                    i.remove();
-                }
-            }
+            minuteCommands = minuteCommands.stream()
+                    .map(map -> map.entrySet().stream()
+                            .filter(entry -> {
+                                val key = entry.getKey().toString();
+                                val command = entry.getValue().toString();
+                                val min = Integer.parseInt(key);
+                                val minutesInMillis = TimeUnit.MINUTES.toMillis(min);
+                                if (minutesInMillis < elapsedTime) {
+                                    return false;
+                                }
+                                val timeUntilMinute = minutesInMillis - elapsedTime;
+                                val future = service.schedule(() -> CommandUtil.executeCommand(context, command), timeUntilMinute, TimeUnit.MILLISECONDS);
+                                minuteFutures.add(future);
+                                return true;
+                            })
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    )
+                    .filter(map -> !map.isEmpty())
+                    .collect(Collectors.toList());
 
             onResume(elapsedTime);
 
@@ -236,6 +212,8 @@ public class Timer {
     }
 
     private int getValidatedEpisodeLength() {
+        val plugin = context.plugin();
+
         int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
         if (length <= 0) {
             length = Config.DEFAULT_EPISODE_TIME;
@@ -246,14 +224,16 @@ public class Timer {
     }
 
     private void countdown() {
-        int countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
+        val plugin = context.plugin();
+
+        val countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
         onCountdownStart(countdownFrom);
-        for (int i = 0; i < countdownFrom; i++) {
-            onCountdownMark(countdownFrom - i);
+        for (int mark = countdownFrom; mark > 0; mark--) {
+            onCountdownMark(mark);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                plugin.logger.log(Level.WARNING, "Sleep interruption in UHC countdown", e);
+                context.logger().log(Level.WARNING, "Sleep interruption in UHC countdown", e);
             }
         }
     }
@@ -272,35 +252,35 @@ public class Timer {
     // Event handling stuff
 
     private void onStart() {
-        plugin.eventBus.post(new UHCStartEvent());
+        context.eventBus().post(new UHCStartEvent());
     }
 
     private void onStop() {
-        plugin.eventBus.post(new UHCStopEvent());
+        context.eventBus().post(new UHCStopEvent());
     }
 
     private void onPause(long timeElapsed) {
-        plugin.eventBus.post(new UHCPauseEvent(timeElapsed));
+        context.eventBus().post(new UHCPauseEvent(timeElapsed));
     }
 
     private void onResume(long timeElapsed) {
-        plugin.eventBus.post(new UHCResumeEvent(timeElapsed));
+        context.eventBus().post(new UHCResumeEvent(timeElapsed));
     }
 
     private void onEpisodeStart() {
-        plugin.eventBus.post(new UHCEpisodeStartEvent(episode, interval));
+        context.eventBus().post(new UHCEpisodeStartEvent(episode, interval));
     }
 
     private void onEpisodeEnd() {
-        plugin.eventBus.post(new UHCEpisodeEndEvent(episode, interval));
+        context.eventBus().post(new UHCEpisodeEndEvent(episode, interval));
     }
 
     private void onCountdownStart(int countingFrom) {
-        plugin.eventBus.post(new UHCCountdownStartEvent(countingFrom));
+        context.eventBus().post(new UHCCountdownStartEvent(countingFrom));
     }
 
     private void onCountdownMark(int mark) {
-        plugin.eventBus.post(new UHCCountdownMarkEvent(mark));
+        context.eventBus().post(new UHCCountdownMarkEvent(mark));
     }
 
     public enum State {

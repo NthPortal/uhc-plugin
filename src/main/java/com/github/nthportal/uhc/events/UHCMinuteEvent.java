@@ -1,9 +1,10 @@
 package com.github.nthportal.uhc.events;
 
-public class UHCMinuteEvent {
-    public final int minuteNumber;
+import lombok.Value;
+import lombok.experimental.Accessors;
 
-    public UHCMinuteEvent(int minuteNumber) {
-        this.minuteNumber = minuteNumber;
-    }
+@Value
+@Accessors(fluent = true)
+public class UHCMinuteEvent {
+    int minuteNumber;
 }
