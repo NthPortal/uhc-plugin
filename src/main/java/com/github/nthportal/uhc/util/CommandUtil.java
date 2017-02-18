@@ -3,11 +3,11 @@ package com.github.nthportal.uhc.util;
 import com.github.nthportal.uhc.core.Context;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.val;
 import org.bukkit.Bukkit;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 
@@ -27,12 +27,12 @@ public class CommandUtil {
     }
 
     public static void executeEventCommands(Context context, String event, List<Function<String, String>> replaceFunctions) {
-        List<String> commands = context.plugin().getConfig().getStringList(event);
-        for (String command : commands) {
+        val commands = context.plugin().getConfig().getStringList(event);
+        for (val command : commands) {
             if (command.startsWith("/")) {
                 command = command.substring(1);
             }
-            for (Function<String, String> function : replaceFunctions) {
+            for (val function : replaceFunctions) {
                 command = function.apply(command);
             }
 
@@ -42,13 +42,13 @@ public class CommandUtil {
     }
 
     public static void executeMappedCommandsMatching(Context context, String event, int toMatch) {
-        List<Map<?, ?>> mapList = context.plugin().getConfig().getMapList(event);
-        for (Map<?, ?> map : mapList) {
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
+        val mapList = context.plugin().getConfig().getMapList(event);
+        for (val map : mapList) {
+            for (val entry : map.entrySet()) {
                 try {
-                    String key = entry.getKey().toString();
-                    String command = entry.getValue().toString();
-                    int num = Integer.parseInt(key);
+                    val key = entry.getKey().toString();
+                    val command = entry.getValue().toString();
+                    val num = Integer.parseInt(key);
                     if (num == toMatch) {
                         executeCommand(context, command);
                     }
@@ -61,7 +61,7 @@ public class CommandUtil {
 
     public static void executeCommand(final Context context, final String command) {
         context.logger().log(Level.INFO, "Executing command: " + command);
-        final Future<Void> future = Bukkit.getScheduler().callSyncMethod(context.plugin(), new Callable<Void>() {
+        final val future = Bukkit.getScheduler().callSyncMethod(context.plugin(), new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);

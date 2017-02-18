@@ -3,6 +3,7 @@ package com.github.nthportal.uhc.core;
 import com.github.nthportal.uhc.events.*;
 import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.val;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -64,15 +65,15 @@ public class Timer {
                 for (Iterator<? extends Map.Entry<?, ?>> j = map.entrySet().iterator(); j.hasNext(); ) {
                     Map.Entry<?, ?> entry = j.next();
                     try {
-                        String key = entry.getKey().toString();
-                        final String command = entry.getValue().toString();
-                        int min = Integer.parseInt(key);
+                        val key = entry.getKey().toString();
+                        val command = entry.getValue().toString();
+                        val min = Integer.parseInt(key);
                         if (min <= 0) {
                             context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
                             j.remove();
                             break;
                         }
-                        Future<?> future = service.schedule(new Runnable() {
+                        val future = service.schedule(new Runnable() {
                             @Override
                             public void run() {
                                 CommandUtil.executeCommand(context, command);
@@ -109,7 +110,7 @@ public class Timer {
             }
 
             episodeFuture.cancel(true);
-            for (Future<?> future : minuteFutures) {
+            for (val future : minuteFutures) {
                 future.cancel(true);
             }
             minuteFutures.clear();
@@ -133,10 +134,10 @@ public class Timer {
                 return false;
             }
 
-            long currentTime = System.currentTimeMillis();
+            val currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - effectiveStartTime;
             episodeFuture.cancel(true);
-            for (Future<?> future : minuteFutures) {
+            for (val future : minuteFutures) {
                 future.cancel(true);
             }
             minuteFutures.clear();
@@ -156,8 +157,8 @@ public class Timer {
                 return false;
             }
 
-            long intervalInMillis = TimeUnit.MINUTES.toMillis(interval);
-            long timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
+            val intervalInMillis = TimeUnit.MINUTES.toMillis(interval);
+            val timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
 
             effectiveStartTime = System.currentTimeMillis() - elapsedTime;
             episodeFuture = service.scheduleAtFixedRate(new Runnable() {
@@ -168,20 +169,20 @@ public class Timer {
             }, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
 
             // Handle onMinute events
-            for (Iterator<Map<?, ?>> i = minuteCommands.iterator(); i.hasNext(); ) {
-                Map<?, ?> map = i.next();
-                for (Iterator<? extends Map.Entry<?, ?>> j = map.entrySet().iterator(); j.hasNext(); ) {
-                    Map.Entry<?, ?> entry = j.next();
+            for (Iterator<Map<?, ?>> mapIterator = minuteCommands.iterator(); mapIterator.hasNext(); ) {
+                Map<?, ?> map = mapIterator.next();
+                for (Iterator<? extends Map.Entry<?, ?>> entryIterator = map.entrySet().iterator(); entryIterator.hasNext(); ) {
+                    Map.Entry<?, ?> entry = entryIterator.next();
 
-                    String key = entry.getKey().toString();
-                    final String command = entry.getValue().toString();
-                    int min = Integer.parseInt(key);
-                    long minutesInMillis = TimeUnit.MINUTES.toMillis(min);
+                    val key = entry.getKey().toString();
+                    val command = entry.getValue().toString();
+                    val min = Integer.parseInt(key);
+                    val minutesInMillis = TimeUnit.MINUTES.toMillis(min);
                     if (minutesInMillis < elapsedTime) {
-                        j.remove();
+                        entryIterator.remove();
                         break;
                     }
-                    long timeUntilMinute = minutesInMillis - elapsedTime;
+                    val timeUntilMinute = minutesInMillis - elapsedTime;
                     Future<?> future = service.schedule(new Runnable() {
                         @Override
                         public void run() {
@@ -191,7 +192,7 @@ public class Timer {
                     minuteFutures.add(future);
                 }
                 if (map.isEmpty()) {
-                    i.remove();
+                    mapIterator.remove();
                 }
             }
 
@@ -234,7 +235,7 @@ public class Timer {
     }
 
     private int getValidatedEpisodeLength() {
-        UHCPlugin plugin = context.plugin();
+        val plugin = context.plugin();
 
         int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
         if (length <= 0) {
@@ -246,12 +247,12 @@ public class Timer {
     }
 
     private void countdown() {
-        UHCPlugin plugin = context.plugin();
+        val plugin = context.plugin();
 
-        int countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
+        val countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
         onCountdownStart(countdownFrom);
-        for (int i = 0; i < countdownFrom; i++) {
-            onCountdownMark(countdownFrom - i);
+        for (int mark = countdownFrom; mark > 0; mark--) {
+            onCountdownMark(mark);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

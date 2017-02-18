@@ -6,9 +6,9 @@ import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.base.Function;
 import com.google.common.eventbus.Subscribe;
 import lombok.AllArgsConstructor;
+import lombok.val;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @AllArgsConstructor
 public class MainListener {
@@ -16,7 +16,7 @@ public class MainListener {
 
     @Subscribe
     public void onPlayerDeath(UHCPlayerDeathEvent event) {
-        List<Function<String, String>> replacements = new ArrayList<>();
+        val replacements = new ArrayList<Function<String, String>>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.PLAYER, event.player().getName()));
         CommandUtil.executeEventCommands(context, Config.Events.ON_DEATH, replacements);
     }
@@ -28,7 +28,7 @@ public class MainListener {
 
     @Subscribe
     public void onCountdownMark(UHCCountdownMarkEvent event) {
-        List<Function<String, String>> replacements = new ArrayList<>();
+        val replacements = new ArrayList<Function<String, String>>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.COUNTDOWN_MARK, String.valueOf(event.countdownMark())));
         CommandUtil.executeEventCommands(context, Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
@@ -55,7 +55,7 @@ public class MainListener {
 
     @Subscribe
     public void onEpisodeStart(UHCEpisodeStartEvent event) {
-        List<Function<String, String>> replacements = new ArrayList<>();
+        val replacements = new ArrayList<Function<String, String>>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
         CommandUtil.executeEventCommands(context, Config.Events.ON_EPISODE_START, replacements);
@@ -66,7 +66,7 @@ public class MainListener {
 
     @Subscribe
     public void onEpisdeEnd(UHCEpisodeEndEvent event) {
-        List<Function<String, String>> replacements = new ArrayList<>();
+        val replacements = new ArrayList<Function<String, String>>();
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
         replacements.add(CommandUtil.replacementFunction(CommandUtil.ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
         CommandUtil.executeEventCommands(context, Config.Events.ON_EPISODE_END, replacements);
