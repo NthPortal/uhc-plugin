@@ -29,7 +29,7 @@ public final class UHCPlugin extends JavaPlugin {
         confCommand.setExecutor(new ConfCommandExecutor(this));
         confCommand.setTabCompleter(new ConfCommandTabCompleter());
 
-        getServer().getPluginManager().registerEvents(new CustomListener(context, timer), this);
+        getServer().getPluginManager().registerEvents(new DeathListener(context, timer), this);
 
         eventBus.register(new MainListener(context));
     }

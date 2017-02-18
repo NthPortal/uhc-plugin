@@ -7,17 +7,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 @AllArgsConstructor
-public class CustomListener implements Listener {
+public class DeathListener implements Listener {
     private final Context context;
     private final Timer timer;
 
     @EventHandler
     public void onPlayerDeath(final PlayerDeathEvent event) {
-        if (timer.getState() != Timer.State.RUNNING) {
-            return;
+        if (timer.getState() == Timer.State.RUNNING) {
+            context.logger().info("Player died: " + event.getEntity().getName());
+            context.eventBus().post(new UHCPlayerDeathEvent(event.getEntity()));
         }
-
-        context.logger().info("Player died: " + event.getEntity().getName());
-        context.eventBus().post(new UHCPlayerDeathEvent(event.getEntity()));
     }
 }
