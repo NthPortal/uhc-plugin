@@ -1,6 +1,5 @@
 package com.github.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.UHCPlugin;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Collections;

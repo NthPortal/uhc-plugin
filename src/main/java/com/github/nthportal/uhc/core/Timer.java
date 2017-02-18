@@ -1,6 +1,5 @@
 package com.github.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.UHCPlugin;
 import com.github.nthportal.uhc.events.*;
 import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -31,7 +30,7 @@ public class Timer {
     private long elapsedTime = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public Timer(Context context) {
+    Timer(Context context) {
         this.context = context;
 
         service = Executors.newSingleThreadScheduledExecutor(

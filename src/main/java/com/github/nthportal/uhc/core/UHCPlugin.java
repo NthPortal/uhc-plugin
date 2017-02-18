@@ -1,13 +1,9 @@
-package com.github.nthportal.uhc;
+package com.github.nthportal.uhc.core;
 
 import com.github.nthportal.uhc.commands.ConfCommandExecutor;
 import com.github.nthportal.uhc.commands.ConfCommandTabCompleter;
 import com.github.nthportal.uhc.commands.MainCommandExecutor;
 import com.github.nthportal.uhc.commands.MainCommandTabCompleter;
-import com.github.nthportal.uhc.core.Config;
-import com.github.nthportal.uhc.core.Context;
-import com.github.nthportal.uhc.core.CustomListener;
-import com.github.nthportal.uhc.core.Timer;
 import com.github.nthportal.uhc.events.MainListener;
 import com.google.common.eventbus.EventBus;
 import org.bukkit.command.PluginCommand;

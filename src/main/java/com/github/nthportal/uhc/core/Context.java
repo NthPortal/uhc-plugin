@@ -1,6 +1,5 @@
 package com.github.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.UHCPlugin;
 import com.google.common.eventbus.EventBus;
 import lombok.Value;
 import lombok.experimental.Accessors;
