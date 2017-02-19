@@ -160,9 +160,8 @@ public final class Timer {
             val minute = state.runningState().currentMinute();
             if (minute > 0) {
                 onMinute(minute);
+                context.logger().info("Ran task for minute " + minute);
             }
-
-            context.logger().info("Ran task for minute " + minute);
         };
     }
 
@@ -176,10 +175,11 @@ public final class Timer {
             val endingEpisode = state.runningState().currentEpisode();
             if (endingEpisode > 0) {
                 onEpisodeEnd(endingEpisode);
+                context.logger().info("Ran task for the end of episode " + endingEpisode);
             }
             onEpisodeStart(endingEpisode + 1);
 
-            context.logger().info("Ran tasks for end of episode " + endingEpisode + " and start of episode " + (endingEpisode + 1));
+            context.logger().info("Ran task for the start of episode " + (endingEpisode + 1));
         };
     }
 
