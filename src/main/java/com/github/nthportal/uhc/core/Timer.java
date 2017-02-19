@@ -1,35 +1,24 @@
 package com.github.nthportal.uhc.core;
 
 import com.github.nthportal.uhc.events.*;
-import com.github.nthportal.uhc.util.CommandUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.Builder;
+import lombok.Synchronized;
+import lombok.Value;
+import lombok.experimental.Accessors;
 import lombok.val;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class Timer {
+public final class Timer {
     private final Context context;
     private final ScheduledExecutorService service;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
-    private final List<Future<?>> minuteFutures = new ArrayList<>();
-    private Future<?> episodeFuture;
-    private List<Map<?, ?>> minuteCommands;
-    private State state = State.STOPPED;
-    private int interval;
-    private int episode = 0;
-    private long originalStartTime;
-    private long effectiveStartTime;
-    private long elapsedTime = 0;
+    private AtomicReference<FullState> fullState;
 
     Timer(Context context) {
         this.context = context;
@@ -39,251 +28,339 @@ public class Timer {
                         .setNameFormat("uhc-scheduler")
                         .build()
         );
+
+        fullState = new AtomicReference<>(FullState.stopped(context));
     }
 
+    @Synchronized
     public boolean start() {
-        lock.writeLock().lock();
-        try {
-            if (state != State.STOPPED) {
-                return false;
-            }
-
-            interval = getValidatedEpisodeLength();
-            countdown();
-            originalStartTime = System.currentTimeMillis();
-            episodeFuture = service.scheduleAtFixedRate(this::doEpisodeMarker, interval, interval, TimeUnit.MINUTES);
-
-            // Handle onMinute events
-            minuteCommands = context.plugin().getConfig().getMapList(Config.Events.ON_MINUTE);
-            minuteCommands = minuteCommands.stream()
-                    .map(map -> map.entrySet().stream()
-                            .filter(entry -> {
-                                try {
-                                    val key = entry.getKey().toString();
-                                    val command = entry.getValue().toString();
-                                    val min = Integer.parseInt(key);
-                                    if (min <= 0) {
-                                        context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
-                                        return false;
-                                    }
-                                    val future = service.schedule(() -> CommandUtil.executeCommand(context, command), min, TimeUnit.MINUTES);
-                                    minuteFutures.add(future);
-                                } catch (NumberFormatException e) {
-                                    context.logger().log(Level.WARNING, Config.Events.ON_MINUTE + " entries must have positive integer keys");
-                                    return false;
-                                }
-                                return true;
-                            })
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    )
-                    .filter(map -> !map.isEmpty())
-                    .collect(Collectors.toList());
-
-            effectiveStartTime = originalStartTime;
-            episode = 1;
-
-            onStart();
-            onEpisodeStart();
-            state = State.RUNNING;
-            return true;
-        } finally {
-            lock.writeLock().unlock();
+        if (fullState.get().state() != State.STOPPED) {
+            return false;
         }
-    }
 
-    public boolean stop() {
-        lock.writeLock().lock();
-        try {
-            if (state == State.STOPPED) {
-                return false;
-            }
+        context.plugin().reloadConfig();
+        val configInfo = ConfigInfo.fromConfig(context);
+        val countdownFrom = configInfo.countdownFrom();
 
-            episodeFuture.cancel(true);
-            for (val future : minuteFutures) {
-                future.cancel(true);
-            }
-            minuteFutures.clear();
-            episode = 0;
-            originalStartTime = 0;
-            effectiveStartTime = 0;
-            elapsedTime = 0;
+        fullState.set(FullState.newBuilder()
+                .configInfo(configInfo)
+                .runningState(RunningState.partiallyInitialized())
+                .state(State.STARTING)
+                .result());
 
-            onStop();
-            state = State.STOPPED;
-            return true;
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public boolean pause() {
-        lock.writeLock().lock();
-        try {
-            if (state != State.RUNNING) {
-                return false;
-            }
-
-            val currentTime = System.currentTimeMillis();
-            elapsedTime = currentTime - effectiveStartTime;
-            episodeFuture.cancel(true);
-            for (val future : minuteFutures) {
-                future.cancel(true);
-            }
-            minuteFutures.clear();
-
-            onPause(elapsedTime);
-            state = State.PAUSED;
-            return true;
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public boolean resume() {
-        lock.writeLock().lock();
-        try {
-            if (state != State.PAUSED) {
-                return false;
-            }
-
-            val intervalInMillis = TimeUnit.MINUTES.toMillis(interval);
-            val timeUntilNextEpisode = intervalInMillis - (elapsedTime % intervalInMillis);
-
-            effectiveStartTime = System.currentTimeMillis() - elapsedTime;
-            episodeFuture = service.scheduleAtFixedRate(this::doEpisodeMarker, timeUntilNextEpisode, intervalInMillis, TimeUnit.MILLISECONDS);
-
-            // Handle onMinute events
-            minuteCommands = minuteCommands.stream()
-                    .map(map -> map.entrySet().stream()
-                            .filter(entry -> {
-                                val key = entry.getKey().toString();
-                                val command = entry.getValue().toString();
-                                val min = Integer.parseInt(key);
-                                val minutesInMillis = TimeUnit.MINUTES.toMillis(min);
-                                if (minutesInMillis < elapsedTime) {
-                                    return false;
-                                }
-                                val timeUntilMinute = minutesInMillis - elapsedTime;
-                                val future = service.schedule(() -> CommandUtil.executeCommand(context, command), timeUntilMinute, TimeUnit.MILLISECONDS);
-                                minuteFutures.add(future);
-                                return true;
-                            })
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    )
-                    .filter(map -> !map.isEmpty())
-                    .collect(Collectors.toList());
-
-            onResume(elapsedTime);
-
-            elapsedTime = 0;
-
-            state = State.RUNNING;
-            return true;
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public State getState() {
-        lock.readLock().lock();
-        try {
-            return state;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    public long getOriginalStartTime() {
-        lock.readLock().lock();
-        try {
-            return originalStartTime;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    public long getEffectiveStartTime() {
-        lock.readLock().lock();
-        try {
-            return effectiveStartTime;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    private int getValidatedEpisodeLength() {
-        val plugin = context.plugin();
-
-        int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
-        if (length <= 0) {
-            length = Config.DEFAULT_EPISODE_TIME;
-            plugin.getConfig().set(Config.EPISODE_TIME, length);
-            plugin.saveConfig();
-        }
-        return length;
-    }
-
-    private void countdown() {
-        val plugin = context.plugin();
-
-        val countdownFrom = plugin.getConfig().getInt(Config.COUNTDOWN_FROM);
         onCountdownStart(countdownFrom);
-        for (int mark = countdownFrom; mark > 0; mark--) {
-            onCountdownMark(mark);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                context.logger().log(Level.WARNING, "Sleep interruption in UHC countdown", e);
+
+        // Schedule events
+        val countdownFuture = service.scheduleAtFixedRate(new CountdownTask(countdownFrom), 0, 1, TimeUnit.SECONDS);
+        val episodeFuture = service.scheduleAtFixedRate(episodeTask(), countdownFrom, TimeUnit.MINUTES.toSeconds(configInfo.episodeLength()), TimeUnit.SECONDS);
+        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), countdownFrom, TimeUnit.MINUTES.toSeconds(1), TimeUnit.SECONDS);
+
+        fullState.updateAndGet(state -> state
+                .toBuilder()
+                .runningState(state.runningState()
+                        .toBuilder()
+                        .countdownFuture(countdownFuture)
+                        .episodeFuture(episodeFuture)
+                        .minuteFuture(minuteFuture)
+                        .result())
+                .result()
+        );
+
+        context.logger().info("Started UHC");
+        return true;
+    }
+
+    @Synchronized
+    public boolean stop() {
+        val state = fullState.get();
+
+        if (state.state() == State.STOPPED) {
+            return false;
+        }
+
+        onStop();
+
+        state.runningState().cancelFutures();
+        fullState.set(FullState.stopped(context));
+
+        context.logger().info("Stopped UHC");
+        return true;
+    }
+
+    @Synchronized
+    public boolean pause() {
+        val state = fullState.get();
+
+        if (state.state() != State.RUNNING) {
+            return false;
+        }
+
+        val runningState = state.runningState();
+        runningState.cancelFutures();
+
+        val elapsedTime = System.currentTimeMillis() - runningState.effectiveStartTime();
+        onPause(elapsedTime);
+
+        fullState.updateAndGet(currentState ->
+                currentState.toBuilder()
+                        .state(State.PAUSED)
+                        .runningState(currentState.runningState()
+                                .toBuilder()
+                                .elapsedTime(elapsedTime)
+                                .result())
+                        .result());
+
+        context.logger().info("Paused UHC");
+        return true;
+    }
+
+    @Synchronized
+    public boolean resume() {
+        val state = fullState.get();
+
+        if (state.state() != State.PAUSED) {
+            return false;
+        }
+
+        val configInfo = state.configInfo();
+        val runningState = state.runningState();
+        val elapsedTime = runningState.elapsedTime();
+        onResume(elapsedTime);
+
+        val currentTime = System.currentTimeMillis();
+
+        val episodeOffset = Math.max(TimeUnit.MINUTES.toMillis(runningState.currentEpisode() * configInfo.episodeLength()) - elapsedTime, 0);
+        val minuteOffset = Math.max(TimeUnit.MINUTES.toMillis(runningState.currentMinute()) - elapsedTime, 0);
+
+        // Schedule events
+        val episodeFuture = service.scheduleAtFixedRate(episodeTask(), episodeOffset, TimeUnit.MINUTES.toMillis(configInfo.episodeLength()), TimeUnit.MILLISECONDS);
+        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), minuteOffset, TimeUnit.MINUTES.toMillis(1), TimeUnit.MILLISECONDS);
+
+        fullState.updateAndGet(currentState ->
+                currentState.toBuilder()
+                        .state(State.RUNNING)
+                        .runningState(currentState.runningState()
+                                .toBuilder()
+                                .effectiveStartTime(currentTime - elapsedTime)
+                                .episodeFuture(episodeFuture)
+                                .minuteFuture(minuteFuture)
+                                .result())
+                        .result());
+
+        context.logger().info("Resumed UHC");
+        return true;
+    }
+
+    private Runnable minuteTask() {
+        return () -> {
+            val state = fullState.getAndUpdate(currentState ->
+                    currentState.toBuilder()
+                            .runningState(currentState.runningState().withNextMinute())
+                            .result());
+
+            val minute = state.runningState().currentMinute();
+            if (minute > 0) {
+                onMinute(minute);
             }
-        }
+        };
     }
 
-    private void doEpisodeMarker() {
-        lock.readLock().lock();
-        try {
-            onEpisodeEnd();
-            episode++;
-            onEpisodeStart();
-        } finally {
-            lock.readLock().unlock();
-        }
+    private Runnable episodeTask() {
+        return () -> {
+            val state = fullState.getAndUpdate(currentState ->
+                    currentState.toBuilder()
+                            .runningState(currentState.runningState().withNextEpisode())
+                            .result());
+
+            val endingEpisode = state.runningState().currentEpisode();
+            if (endingEpisode > 0) {
+                onEpisodeEnd(endingEpisode);
+            }
+            onEpisodeStart(endingEpisode + 1);
+        };
     }
 
-    // Event handling stuff
+    State state() {
+        return fullState.get().state();
+    }
 
     private void onStart() {
         context.eventBus().post(new UHCStartEvent());
+        context.logger().info("Posted event for UHC start");
     }
 
     private void onStop() {
         context.eventBus().post(new UHCStopEvent());
+        context.logger().info("Posted event for UHC stop");
     }
 
     private void onPause(long timeElapsed) {
         context.eventBus().post(new UHCPauseEvent(timeElapsed));
+        context.logger().info("Posted event for UHC pause");
     }
 
     private void onResume(long timeElapsed) {
         context.eventBus().post(new UHCResumeEvent(timeElapsed));
+        context.logger().info("Posted event for UHC resume");
     }
 
-    private void onEpisodeStart() {
-        context.eventBus().post(new UHCEpisodeStartEvent(episode, interval));
+    private void onEpisodeStart(int episodeNumber) {
+        context.eventBus().post(new UHCEpisodeStartEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
+        context.logger().info("Posted event for start of episode " + episodeNumber);
     }
 
-    private void onEpisodeEnd() {
-        context.eventBus().post(new UHCEpisodeEndEvent(episode, interval));
+    private void onEpisodeEnd(int episodeNumber) {
+        context.eventBus().post(new UHCEpisodeEndEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
+        context.logger().info("Posted event for end of episode " + episodeNumber);
     }
 
     private void onCountdownStart(int countingFrom) {
         context.eventBus().post(new UHCCountdownStartEvent(countingFrom));
+        context.logger().info("Posted event for countdown start");
     }
 
     private void onCountdownMark(int mark) {
         context.eventBus().post(new UHCCountdownMarkEvent(mark));
+        context.logger().info("Posted event for countdown mark " + mark);
+    }
+
+    private void onMinute(int minute) {
+        context.eventBus().post(new UHCMinuteEvent(minute));
+        context.logger().info("Posted event for minute " + minute);
     }
 
     public enum State {
-        STOPPED, RUNNING, PAUSED
+        STOPPED, STARTING, RUNNING, PAUSED
+    }
+
+    @Value
+    @Accessors(fluent = true)
+    private static class ConfigInfo {
+        int episodeLength;
+        int countdownFrom;
+
+        static ConfigInfo fromConfig(Context context) {
+            return new ConfigInfo(getValidatedEpisodeLength(context), getCountdownFrom(context));
+        }
+
+        private static int getValidatedEpisodeLength(Context context) {
+            val plugin = context.plugin();
+
+            int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
+            if (length <= 0) {
+                length = Config.DEFAULT_EPISODE_TIME;
+                plugin.getConfig().set(Config.EPISODE_TIME, length);
+                plugin.saveConfig();
+            }
+            return length;
+        }
+
+        private static int getCountdownFrom(Context context) {
+            return Math.max(context.plugin().getConfig().getInt(Config.COUNTDOWN_FROM), 0);
+        }
+    }
+
+    @Value
+    @Accessors(fluent = true)
+    @Builder(builderClassName = "Builder", builderMethodName = "newBuilder", buildMethodName = "result", toBuilder = true)
+    private static class RunningState {
+        int currentMinute;
+        int currentEpisode;
+        long originalStartTime;
+        long effectiveStartTime;
+        long elapsedTime;
+        Future<?> countdownFuture;
+        Future<?> episodeFuture;
+        Future<?> minuteFuture;
+
+        static RunningState partiallyInitialized() {
+            return newBuilder()
+                    .currentMinute(0)
+                    .currentEpisode(0)
+                    .countdownFuture(null)
+                    .episodeFuture(null)
+                    .minuteFuture(null)
+                    .originalStartTime(-1)
+                    .effectiveStartTime(-1)
+                    .elapsedTime(-1)
+                    .result();
+        }
+
+        RunningState startingNow() {
+            val time = System.currentTimeMillis();
+
+            return toBuilder()
+                    .originalStartTime(time)
+                    .effectiveStartTime(time)
+                    .elapsedTime(0)
+                    .result();
+        }
+
+        RunningState withNextEpisode() {
+            return toBuilder()
+                    .currentEpisode(currentEpisode + 1)
+                    .result();
+        }
+
+        RunningState withNextMinute() {
+            return toBuilder()
+                    .currentMinute(currentMinute + 1)
+                    .result();
+        }
+
+        void cancelFutures() {
+            countdownFuture().cancel(true);
+            episodeFuture().cancel(true);
+            minuteFuture().cancel(true);
+        }
+    }
+
+    @Value
+    @Accessors(fluent = true)
+    @Builder(builderClassName = "Builder", builderMethodName = "newBuilder", buildMethodName = "result", toBuilder = true)
+    private static class FullState {
+        State state;
+        RunningState runningState;
+        ConfigInfo configInfo;
+
+        static FullState stopped(Context context) {
+            return new FullState(State.STOPPED, null, ConfigInfo.fromConfig(context));
+        }
+    }
+
+    private class CountdownTask implements Runnable {
+        private final AtomicInteger mark;
+
+        CountdownTask(int countdownFrom) {
+            mark = new AtomicInteger(countdownFrom);
+        }
+
+        @Override
+        public void run() {
+            val currentMark = mark.getAndDecrement();
+
+            if (currentMark > 0) {
+                onCountdownMark(currentMark);
+            } else if (currentMark == 0) {
+                // Switch from STARTING to RUNNING
+                fullState.updateAndGet(state -> {
+                    val currentState = state.state();
+                    return state.toBuilder()
+                            .runningState(state.runningState()
+                                    .startingNow())
+                            .state(currentState == State.STARTING ? State.RUNNING : currentState)
+                            .result();
+                });
+
+                onStart();
+
+                // Cancel this future by throwing an exception
+                context.logger().fine("Cancelling countdown future");
+                throw new RuntimeException("Cancelling countdown future by throwing this exception");
+            } else {
+                context.logger().severe("Negative countdown mark: " + currentMark);
+                throw new IllegalStateException("Negative countdown mark: " + currentMark);
+            }
+        }
     }
 }
