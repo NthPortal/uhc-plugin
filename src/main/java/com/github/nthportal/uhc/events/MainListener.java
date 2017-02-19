@@ -72,4 +72,9 @@ public class MainListener {
         replacements.add(replacement(ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
         executor.executeEventCommands(Config.Events.ON_EPISODE_END, replacements);
     }
+
+    @Subscribe
+    public void onMinute(UHCMinuteEvent event) {
+        executor.executeMappedCommandsMatching(Config.Events.ON_MINUTE, event.minuteNumber());
+    }
 }
