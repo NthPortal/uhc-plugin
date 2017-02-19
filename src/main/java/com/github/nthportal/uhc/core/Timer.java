@@ -182,7 +182,7 @@ public final class Timer {
         };
     }
 
-    public State state() {
+    State state() {
         return fullState.get().state();
     }
 
