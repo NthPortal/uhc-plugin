@@ -38,6 +38,7 @@ public final class Timer {
             return false;
         }
 
+        context.plugin().reloadConfig();
         val configInfo = ConfigInfo.fromConfig(context);
         val countdownFrom = configInfo.countdownFrom();
 
