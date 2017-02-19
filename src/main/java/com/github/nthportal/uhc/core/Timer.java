@@ -51,16 +51,16 @@ public final class Timer {
 
         // Schedule events
         val countdownFuture = service.scheduleAtFixedRate(new CountdownTask(countdownFrom), 0, 1, TimeUnit.SECONDS);
-        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), countdownFrom, TimeUnit.MINUTES.toSeconds(1), TimeUnit.SECONDS);
         val episodeFuture = service.scheduleAtFixedRate(episodeTask(), countdownFrom, TimeUnit.MINUTES.toSeconds(configInfo.episodeLength()), TimeUnit.SECONDS);
+        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), countdownFrom, TimeUnit.MINUTES.toSeconds(1), TimeUnit.SECONDS);
 
         fullState.updateAndGet(state -> state
                 .toBuilder()
                 .runningState(state.runningState()
                         .toBuilder()
                         .countdownFuture(countdownFuture)
-                        .minuteFuture(minuteFuture)
                         .episodeFuture(episodeFuture)
+                        .minuteFuture(minuteFuture)
                         .result())
                 .result()
         );
@@ -128,12 +128,12 @@ public final class Timer {
 
         val currentTime = System.currentTimeMillis();
 
-        val minuteOffset = Math.max(TimeUnit.MINUTES.toMillis(runningState.currentMinute()) - elapsedTime, 0);
         val episodeOffset = Math.max(TimeUnit.MINUTES.toMillis(runningState.currentEpisode() * configInfo.episodeLength()) - elapsedTime, 0);
+        val minuteOffset = Math.max(TimeUnit.MINUTES.toMillis(runningState.currentMinute()) - elapsedTime, 0);
 
         // Schedule events
-        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), minuteOffset, TimeUnit.MINUTES.toSeconds(1), TimeUnit.SECONDS);
         val episodeFuture = service.scheduleAtFixedRate(episodeTask(), episodeOffset, TimeUnit.MINUTES.toSeconds(configInfo.episodeLength()), TimeUnit.SECONDS);
+        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), minuteOffset, TimeUnit.MINUTES.toSeconds(1), TimeUnit.SECONDS);
 
         fullState.updateAndGet(currentState ->
                 currentState.toBuilder()
@@ -141,8 +141,8 @@ public final class Timer {
                         .runningState(currentState.runningState()
                                 .toBuilder()
                                 .effectiveStartTime(currentTime - elapsedTime)
-                                .minuteFuture(minuteFuture)
                                 .episodeFuture(episodeFuture)
+                                .minuteFuture(minuteFuture)
                                 .result())
                         .result());
 
@@ -264,16 +264,16 @@ public final class Timer {
         long effectiveStartTime;
         long elapsedTime;
         Future<?> countdownFuture;
-        Future<?> minuteFuture;
         Future<?> episodeFuture;
+        Future<?> minuteFuture;
 
         static RunningState partiallyInitialized() {
             return newBuilder()
                     .currentMinute(0)
                     .currentEpisode(0)
                     .countdownFuture(null)
-                    .minuteFuture(null)
                     .episodeFuture(null)
+                    .minuteFuture(null)
                     .originalStartTime(-1)
                     .effectiveStartTime(-1)
                     .elapsedTime(-1)
@@ -304,8 +304,8 @@ public final class Timer {
 
         void cancelFutures() {
             countdownFuture().cancel(true);
-            minuteFuture().cancel(true);
             episodeFuture().cancel(true);
+            minuteFuture().cancel(true);
         }
     }
 
