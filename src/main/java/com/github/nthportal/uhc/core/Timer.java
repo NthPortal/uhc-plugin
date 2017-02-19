@@ -160,7 +160,6 @@ public final class Timer {
             val minute = state.runningState().currentMinute();
             if (minute > 0) {
                 onMinute(minute);
-                context.logger().info("Ran task for minute " + minute);
             }
         };
     }
@@ -175,11 +174,8 @@ public final class Timer {
             val endingEpisode = state.runningState().currentEpisode();
             if (endingEpisode > 0) {
                 onEpisodeEnd(endingEpisode);
-                context.logger().info("Ran task for the end of episode " + endingEpisode);
             }
             onEpisodeStart(endingEpisode + 1);
-
-            context.logger().info("Ran task for the start of episode " + (endingEpisode + 1));
         };
     }
 
@@ -189,38 +185,47 @@ public final class Timer {
 
     private void onStart() {
         context.eventBus().post(new UHCStartEvent());
+        context.logger().info("Posted event for UHC start");
     }
 
     private void onStop() {
         context.eventBus().post(new UHCStopEvent());
+        context.logger().info("Posted event for UHC stop");
     }
 
     private void onPause(long timeElapsed) {
         context.eventBus().post(new UHCPauseEvent(timeElapsed));
+        context.logger().info("Posted event for UHC pause");
     }
 
     private void onResume(long timeElapsed) {
         context.eventBus().post(new UHCResumeEvent(timeElapsed));
+        context.logger().info("Posted event for UHC resume");
     }
 
     private void onEpisodeStart(int episodeNumber) {
         context.eventBus().post(new UHCEpisodeStartEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
+        context.logger().info("Posted event for start of episode " + episodeNumber);
     }
 
     private void onEpisodeEnd(int episodeNumber) {
         context.eventBus().post(new UHCEpisodeEndEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
+        context.logger().info("Posted event for end of episode " + episodeNumber);
     }
 
     private void onCountdownStart(int countingFrom) {
         context.eventBus().post(new UHCCountdownStartEvent(countingFrom));
+        context.logger().info("Posted event for countdown start");
     }
 
     private void onCountdownMark(int mark) {
         context.eventBus().post(new UHCCountdownMarkEvent(mark));
+        context.logger().info("Posted event for countdown mark " + mark);
     }
 
     private void onMinute(int minute) {
         context.eventBus().post(new UHCMinuteEvent(minute));
+        context.logger().info("Posted event for minute " + minute);
     }
 
     public enum State {
@@ -335,7 +340,6 @@ public final class Timer {
 
             if (currentMark > 0) {
                 onCountdownMark(currentMark);
-                context.logger().info("Ran task for countdown mark " + currentMark);
             } else if (currentMark == 0) {
                 // Switch from STARTING to RUNNING
                 fullState.updateAndGet(state -> {
