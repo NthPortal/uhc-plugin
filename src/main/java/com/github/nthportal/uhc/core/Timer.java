@@ -47,7 +47,6 @@ public final class Timer {
                 .state(State.STARTING)
                 .result());
 
-        onStart();
         onCountdownStart(countdownFrom);
 
         // Schedule events
@@ -159,7 +158,9 @@ public final class Timer {
                             .result());
 
             val minute = state.runningState().currentMinute();
-            onMinute(minute);
+            if (minute > 0) {
+                onMinute(minute);
+            }
 
             context.logger().info("Ran task for minute " + minute);
         };
@@ -229,8 +230,8 @@ public final class Timer {
     @Value
     @Accessors(fluent = true)
     private static class ConfigInfo {
-        int countdownFrom;
         int episodeLength;
+        int countdownFrom;
 
         static ConfigInfo fromConfig(Context context) {
             return new ConfigInfo(getValidatedEpisodeLength(context), getCountdownFrom(context));
@@ -345,6 +346,8 @@ public final class Timer {
                             .state(currentState == State.STARTING ? State.RUNNING : currentState)
                             .result();
                 });
+
+                onStart();
 
                 // Cancel this future by throwing an exception
                 context.logger().fine("Cancelling countdown future");
