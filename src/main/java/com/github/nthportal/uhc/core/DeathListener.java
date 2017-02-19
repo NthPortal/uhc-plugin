@@ -13,7 +13,7 @@ public class DeathListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(final PlayerDeathEvent event) {
-        if (timer.getState() == Timer.State.RUNNING) {
+        if (timer.state() == Timer.State.RUNNING) {
             context.logger().info("Player died: " + event.getEntity().getName());
             context.eventBus().post(new UHCPlayerDeathEvent(event.getEntity()));
         }

@@ -16,8 +16,7 @@ public final class UHCPlugin extends JavaPlugin {
     private final Logger logger = getLogger();
     private final EventBus eventBus = new EventBus("UHC-Plugin");
     private final Context context = new Context(this, logger, eventBus);
-    private final CommandExecutor executor = new CommandExecutor(context);
-    private final Timer timer = new Timer(context, executor);
+    private final Timer timer = new Timer(context);
 
     @Override
     public void onEnable() {
@@ -33,7 +32,7 @@ public final class UHCPlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new DeathListener(context, timer), this);
 
-        eventBus.register(new MainListener(executor));
+        eventBus.register(new MainListener(new CommandExecutor(context)));
     }
 
     @Override
