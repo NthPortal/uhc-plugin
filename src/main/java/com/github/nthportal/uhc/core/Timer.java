@@ -132,8 +132,8 @@ public final class Timer {
         val minuteOffset = Math.max(TimeUnit.MINUTES.toMillis(runningState.currentMinute()) - elapsedTime, 0);
 
         // Schedule events
-        val episodeFuture = service.scheduleAtFixedRate(episodeTask(), episodeOffset, TimeUnit.MINUTES.toSeconds(configInfo.episodeLength()), TimeUnit.SECONDS);
-        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), minuteOffset, TimeUnit.MINUTES.toSeconds(1), TimeUnit.SECONDS);
+        val episodeFuture = service.scheduleAtFixedRate(episodeTask(), episodeOffset, TimeUnit.MINUTES.toMillis(configInfo.episodeLength()), TimeUnit.MILLISECONDS);
+        val minuteFuture = service.scheduleAtFixedRate(minuteTask(), minuteOffset, TimeUnit.MINUTES.toMillis(1), TimeUnit.MILLISECONDS);
 
         fullState.updateAndGet(currentState ->
                 currentState.toBuilder()
