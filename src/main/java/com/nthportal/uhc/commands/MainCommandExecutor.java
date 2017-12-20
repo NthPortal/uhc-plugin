@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class MainCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc";
-    public static final String PERMISSION = "uhc-plugin.uhc";
+    public static final String PERMISSION = "uhc-manager.uhc";
 
     private final ExecutorService service = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder()

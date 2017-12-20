@@ -12,7 +12,7 @@ import java.util.*;
 
 public class ConfCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-conf";
-    public static final String PERMISSION = "uhc-plugin.uhc-conf";
+    public static final String PERMISSION = "uhc-manager.uhc-conf";
 
     private static final int PAGE_ENTRIES = 8;
 

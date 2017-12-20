@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 public final class UHCPlugin extends JavaPlugin {
     private final Logger logger = getLogger();
-    private final EventBus eventBus = new EventBus("UHC-Plugin");
+    private final EventBus eventBus = new EventBus("UHC-Manager");
     private final Context context = new Context(this, logger, eventBus);
     private final Timer timer = new Timer(context);
 
