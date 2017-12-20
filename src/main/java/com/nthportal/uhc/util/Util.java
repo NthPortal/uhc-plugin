@@ -1,4 +1,4 @@
-package com.github.nthportal.uhc.util;
+package com.nthportal.uhc.util;
 
 import java.util.Collection;
 import java.util.List;

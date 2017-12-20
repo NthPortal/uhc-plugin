@@ -1,4 +1,4 @@
-package com.github.nthportal.uhc.events;
+package com.nthportal.uhc.events;
 
 import lombok.Value;
 import lombok.experimental.Accessors;

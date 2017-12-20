@@ -1,6 +1,6 @@
-package com.github.nthportal.uhc.commands;
+package com.nthportal.uhc.commands;
 
-import com.github.nthportal.uhc.util.Util;
+import com.nthportal.uhc.util.Util;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;

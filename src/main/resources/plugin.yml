@@ -1,5 +1,5 @@
 name: UHC-Plugin
-main: com.github.nthportal.uhc.core.UHCPlugin
+main: com.nthportal.uhc.core.UHCPlugin
 author: NthPortal
 version: 2.0.0-SNAPSHOT
 

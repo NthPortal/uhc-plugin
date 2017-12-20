@@ -1,11 +1,11 @@
-package com.github.nthportal.uhc.core;
+package com.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.commands.ConfCommandExecutor;
-import com.github.nthportal.uhc.commands.ConfCommandTabCompleter;
-import com.github.nthportal.uhc.commands.MainCommandExecutor;
-import com.github.nthportal.uhc.commands.MainCommandTabCompleter;
-import com.github.nthportal.uhc.events.MainListener;
-import com.github.nthportal.uhc.util.CommandExecutor;
+import com.nthportal.uhc.commands.ConfCommandExecutor;
+import com.nthportal.uhc.commands.ConfCommandTabCompleter;
+import com.nthportal.uhc.commands.MainCommandExecutor;
+import com.nthportal.uhc.commands.MainCommandTabCompleter;
+import com.nthportal.uhc.events.MainListener;
+import com.nthportal.uhc.util.CommandExecutor;
 import com.google.common.eventbus.EventBus;
 import lombok.val;
 import org.bukkit.plugin.java.JavaPlugin;

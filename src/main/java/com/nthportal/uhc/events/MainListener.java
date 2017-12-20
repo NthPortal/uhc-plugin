@@ -1,7 +1,7 @@
-package com.github.nthportal.uhc.events;
+package com.nthportal.uhc.events;
 
-import com.github.nthportal.uhc.core.Config;
-import com.github.nthportal.uhc.util.CommandExecutor;
+import com.nthportal.uhc.core.Config;
+import com.nthportal.uhc.util.CommandExecutor;
 import com.google.common.eventbus.Subscribe;
 import lombok.AllArgsConstructor;
 import lombok.val;
@@ -9,7 +9,7 @@ import lombok.val;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import static com.github.nthportal.uhc.util.CommandExecutor.*;
+import static com.nthportal.uhc.util.CommandExecutor.*;
 
 @AllArgsConstructor
 public class MainListener {

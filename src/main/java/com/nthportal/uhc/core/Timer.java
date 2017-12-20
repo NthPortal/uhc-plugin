@@ -1,7 +1,7 @@
-package com.github.nthportal.uhc.core;
+package com.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.events.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.nthportal.uhc.events.*;
 import lombok.Builder;
 import lombok.Synchronized;
 import lombok.Value;

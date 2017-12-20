@@ -1,6 +1,6 @@
-package com.github.nthportal.uhc.util;
+package com.nthportal.uhc.util;
 
-import com.github.nthportal.uhc.core.Context;
+import com.nthportal.uhc.core.Context;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.val;
 import org.bukkit.Bukkit;

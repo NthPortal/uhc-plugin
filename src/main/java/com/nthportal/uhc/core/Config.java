@@ -1,4 +1,4 @@
-package com.github.nthportal.uhc.core;
+package com.nthportal.uhc.core;
 
 import lombok.val;
 

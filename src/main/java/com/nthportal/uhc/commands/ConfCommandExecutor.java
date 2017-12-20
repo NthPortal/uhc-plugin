@@ -1,7 +1,7 @@
-package com.github.nthportal.uhc.commands;
+package com.nthportal.uhc.commands;
 
-import com.github.nthportal.uhc.core.Config;
-import com.github.nthportal.uhc.core.UHCPlugin;
+import com.nthportal.uhc.core.Config;
+import com.nthportal.uhc.core.UHCPlugin;
 import com.google.common.base.Joiner;
 import lombok.val;
 import org.bukkit.command.Command;

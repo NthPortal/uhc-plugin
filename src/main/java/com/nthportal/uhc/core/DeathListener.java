@@ -1,6 +1,6 @@
-package com.github.nthportal.uhc.core;
+package com.nthportal.uhc.core;
 
-import com.github.nthportal.uhc.events.UHCPlayerDeathEvent;
+import com.nthportal.uhc.events.UHCPlayerDeathEvent;
 import lombok.AllArgsConstructor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

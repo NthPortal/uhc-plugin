@@ -1,6 +1,6 @@
-package com.github.nthportal.uhc.commands;
+package com.nthportal.uhc.commands;
 
-import com.github.nthportal.uhc.core.Timer;
+import com.nthportal.uhc.core.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.command.Command;
