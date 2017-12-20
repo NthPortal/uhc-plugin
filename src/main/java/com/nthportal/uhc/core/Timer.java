@@ -78,9 +78,8 @@ public final class Timer {
             return false;
         }
 
-        onStop();
-
         state.runningState().cancelFutures();
+        onStop();
         fullState.set(FullState.stopped(context));
 
         context.logger().info("Stopped UHC");
