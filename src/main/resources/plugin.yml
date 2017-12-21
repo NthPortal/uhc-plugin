@@ -20,7 +20,7 @@ commands:
   uhc-test:
     description: Test UHC Events
     usage: |
-      /uhc-test <countdown-start|full-countdown|start|full-start>
+      /uhc-test <countdown-start|full-countdown|start|full-start|stop|pause|resume>
       /uhc-test <countdown-mark|episode-change|minute> <NUMBER>
       /uhc-test <death> <PLAYER>
     permission: uhc-manager.configure

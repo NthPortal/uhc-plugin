@@ -89,6 +89,15 @@ public class TestCommandExecutor implements CommandExecutor {
                 break;
             case Events.FULL_START:
                 return doFullStart(sender);
+            case Events.STOP:
+                context.eventBus().post(new StopEvent());
+                break;
+            case Events.PAUSE:
+                context.eventBus().post(new PauseEvent(0));
+                break;
+            case Events.RESUME:
+                context.eventBus().post(new ResumeEvent(0));
+                break;
             default:
                 sender.sendMessage("Event '" + event + "' requires argument");
         }
@@ -241,6 +250,9 @@ public class TestCommandExecutor implements CommandExecutor {
         static final String FULL_COUNTDOWN = "full-countdown";
         static final String START = "start";
         static final String FULL_START = "full-start";
+        static final String STOP = "stop";
+        static final String PAUSE = "pause";
+        static final String RESUME = "resume";
         static final String EPISODE_CHANGE = "episode-change";
         static final String MINUTE = "minute";
         static final String DEATH = "death";
@@ -251,6 +263,9 @@ public class TestCommandExecutor implements CommandExecutor {
                 FULL_COUNTDOWN,
                 START,
                 FULL_START,
+                STOP,
+                PAUSE,
+                RESUME,
                 EPISODE_CHANGE,
                 MINUTE,
                 DEATH
