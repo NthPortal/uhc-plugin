@@ -1,10 +1,9 @@
 package com.nthportal.uhc.core;
 
-import com.nthportal.uhc.events.UHCPlayerDeathEvent;
+import com.nthportal.uhc.events.PlayerDeathEvent;
 import lombok.AllArgsConstructor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
 
 @AllArgsConstructor
 public class DeathListener implements Listener {
@@ -12,10 +11,10 @@ public class DeathListener implements Listener {
     private final Timer timer;
 
     @EventHandler
-    public void onPlayerDeath(final PlayerDeathEvent event) {
+    public void onPlayerDeath(final org.bukkit.event.entity.PlayerDeathEvent event) {
         if (timer.state() == Timer.State.RUNNING) {
             context.logger().info("Player died: " + event.getEntity().getName());
-            context.eventBus().post(new UHCPlayerDeathEvent(event.getEntity()));
+            context.eventBus().post(new PlayerDeathEvent(event.getEntity()));
         }
     }
 }

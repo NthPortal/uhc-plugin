@@ -128,13 +128,13 @@ public class TestCommandExecutor implements CommandExecutor {
 
         switch (event) {
             case Events.COUNTDOWN_MARK:
-                context.eventBus().post(new UHCCountdownMarkEvent(number));
+                context.eventBus().post(new CountdownMarkEvent(number));
                 break;
             case Events.EPISODE_CHANGE:
                 doEpisodeChange(number);
                 break;
             case Events.MINUTE:
-                context.eventBus().post(new UHCMinuteEvent(number));
+                context.eventBus().post(new MinuteEvent(number));
                 break;
             default:
                 throw Util.impossible();
@@ -145,7 +145,7 @@ public class TestCommandExecutor implements CommandExecutor {
     private boolean doTestPlayerArg(CommandSender sender, String event, Player player) {
         switch (event) {
             case Events.DEATH:
-                context.eventBus().post(new UHCPlayerDeathEvent(player));
+                context.eventBus().post(new PlayerDeathEvent(player));
                 break;
             default:
                 throw Util.impossible();
@@ -159,7 +159,7 @@ public class TestCommandExecutor implements CommandExecutor {
     }
 
     private void doCountdownStart() {
-        context.eventBus().post(new UHCCountdownStartEvent(Config.getCountdownFrom(context)));
+        context.eventBus().post(new CountdownStartEvent(Config.getCountdownFrom(context)));
     }
 
     private boolean doFullCountdown(CommandSender sender) {
@@ -179,10 +179,10 @@ public class TestCommandExecutor implements CommandExecutor {
     private Runnable countdownTask(int countdownFrom) {
         val eventBus = context.eventBus();
         return () -> {
-            eventBus.post(new UHCCountdownStartEvent(countdownFrom));
+            eventBus.post(new CountdownStartEvent(countdownFrom));
             int mark = countdownFrom;
             while (mark > 0) {
-                eventBus.post(new UHCCountdownMarkEvent(mark));
+                eventBus.post(new CountdownMarkEvent(mark));
                 mark--;
                 try {
                     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
@@ -202,8 +202,8 @@ public class TestCommandExecutor implements CommandExecutor {
     private void doStart() {
         val eventBus = context.eventBus();
         val length = context.plugin().getConfig().getInt(Config.EPISODE_LENGTH);
-        eventBus.post(new UHCStartEvent());
-        eventBus.post(new UHCEpisodeStartEvent(1, length));
+        eventBus.post(new StartEvent());
+        eventBus.post(new EpisodeStartEvent(1, length));
     }
 
     private boolean doFullStart(CommandSender sender) {
@@ -230,9 +230,9 @@ public class TestCommandExecutor implements CommandExecutor {
         val eventBus = context.eventBus();
         val length = context.plugin().getConfig().getInt(Config.EPISODE_LENGTH);
         val minute = length * episodeNumber;
-        eventBus.post(new UHCEpisodeEndEvent(episodeNumber, length));
-        eventBus.post(new UHCEpisodeStartEvent(episodeNumber + 1, length));
-        eventBus.post(new UHCMinuteEvent(minute));
+        eventBus.post(new EpisodeEndEvent(episodeNumber, length));
+        eventBus.post(new EpisodeStartEvent(episodeNumber + 1, length));
+        eventBus.post(new MinuteEvent(minute));
     }
 
     static class Events {

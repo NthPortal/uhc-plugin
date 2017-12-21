@@ -5,11 +5,11 @@ import lombok.experimental.Accessors;
 
 @Value
 @Accessors(fluent = true)
-public class UHCEpisodeEndEvent {
+public class EpisodeStartEvent {
     int episodeNumber;
     int episodeLength;
 
     public int minutesElapsed() {
-        return episodeNumber * episodeLength;
+        return episodeLength * (episodeNumber - 1);
     }
 }

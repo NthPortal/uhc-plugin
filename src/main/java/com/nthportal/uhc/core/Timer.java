@@ -184,47 +184,47 @@ public final class Timer {
     }
 
     private void onStart() {
-        context.eventBus().post(new UHCStartEvent());
+        context.eventBus().post(new StartEvent());
         context.logger().info("Posted event for UHC start");
     }
 
     private void onStop() {
-        context.eventBus().post(new UHCStopEvent());
+        context.eventBus().post(new StopEvent());
         context.logger().info("Posted event for UHC stop");
     }
 
     private void onPause(long timeElapsed) {
-        context.eventBus().post(new UHCPauseEvent(timeElapsed));
+        context.eventBus().post(new PauseEvent(timeElapsed));
         context.logger().info("Posted event for UHC pause");
     }
 
     private void onResume(long timeElapsed) {
-        context.eventBus().post(new UHCResumeEvent(timeElapsed));
+        context.eventBus().post(new ResumeEvent(timeElapsed));
         context.logger().info("Posted event for UHC resume");
     }
 
     private void onEpisodeStart(int episodeNumber) {
-        context.eventBus().post(new UHCEpisodeStartEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
+        context.eventBus().post(new EpisodeStartEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
         context.logger().info("Posted event for start of episode " + episodeNumber);
     }
 
     private void onEpisodeEnd(int episodeNumber) {
-        context.eventBus().post(new UHCEpisodeEndEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
+        context.eventBus().post(new EpisodeEndEvent(episodeNumber, fullState.get().configInfo().episodeLength()));
         context.logger().info("Posted event for end of episode " + episodeNumber);
     }
 
     private void onCountdownStart(int countingFrom) {
-        context.eventBus().post(new UHCCountdownStartEvent(countingFrom));
+        context.eventBus().post(new CountdownStartEvent(countingFrom));
         context.logger().info("Posted event for countdown start");
     }
 
     private void onCountdownMark(int mark) {
-        context.eventBus().post(new UHCCountdownMarkEvent(mark));
+        context.eventBus().post(new CountdownMarkEvent(mark));
         context.logger().info("Posted event for countdown mark " + mark);
     }
 
     private void onMinute(int minute) {
-        context.eventBus().post(new UHCMinuteEvent(minute));
+        context.eventBus().post(new MinuteEvent(minute));
         context.logger().info("Posted event for minute " + minute);
     }
 

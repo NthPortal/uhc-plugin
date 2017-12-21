@@ -5,6 +5,6 @@ import lombok.experimental.Accessors;
 
 @Value
 @Accessors(fluent = true)
-public class UHCCountdownMarkEvent {
-    int countdownMark;
+public class PauseEvent {
+    long timeElapsed;
 }

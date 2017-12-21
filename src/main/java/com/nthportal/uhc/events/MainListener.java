@@ -16,46 +16,46 @@ public class MainListener {
     private final CommandExecutor executor;
 
     @Subscribe
-    public void onPlayerDeath(UHCPlayerDeathEvent event) {
+    public void onPlayerDeath(PlayerDeathEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
         replacements.add(replacement(ReplaceTargets.PLAYER, event.player().getName()));
         executor.executeEventCommands(Config.Events.ON_DEATH, replacements);
     }
 
     @Subscribe
-    public void onCountdownStart(UHCCountdownStartEvent event) {
+    public void onCountdownStart(CountdownStartEvent event) {
         executor.executeEventCommands(Config.Events.ON_COUNTDOWN_START);
     }
 
     @Subscribe
-    public void onCountdownMark(UHCCountdownMarkEvent event) {
+    public void onCountdownMark(CountdownMarkEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
         replacements.add(replacement(ReplaceTargets.COUNTDOWN_MARK, String.valueOf(event.countdownMark())));
         executor.executeEventCommands(Config.Events.ON_COUNTDOWN_MARK, replacements);
     }
 
     @Subscribe
-    public void onStart(UHCStartEvent event) {
+    public void onStart(StartEvent event) {
         executor.executeEventCommands(Config.Events.ON_START);
     }
 
     @Subscribe
-    public void onStop(UHCStopEvent event) {
+    public void onStop(StopEvent event) {
         executor.executeEventCommands(Config.Events.ON_STOP);
     }
 
     @Subscribe
-    public void onPause(UHCPauseEvent event) {
+    public void onPause(PauseEvent event) {
         executor.executeEventCommands(Config.Events.ON_PAUSE);
     }
 
     @Subscribe
-    public void onResume(UHCResumeEvent event) {
+    public void onResume(ResumeEvent event) {
         executor.executeEventCommands(Config.Events.ON_RESUME);
     }
 
     @Subscribe
-    public void onEpisodeStart(UHCEpisodeStartEvent event) {
+    public void onEpisodeStart(EpisodeStartEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
         replacements.add(replacement(ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
         replacements.add(replacement(ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
@@ -66,7 +66,7 @@ public class MainListener {
     }
 
     @Subscribe
-    public void onEpisdeEnd(UHCEpisodeEndEvent event) {
+    public void onEpisdeEnd(EpisodeEndEvent event) {
         val replacements = new ArrayList<Function<String, String>>();
         replacements.add(replacement(ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())));
         replacements.add(replacement(ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed())));
@@ -74,7 +74,7 @@ public class MainListener {
     }
 
     @Subscribe
-    public void onMinute(UHCMinuteEvent event) {
+    public void onMinute(MinuteEvent event) {
         executor.executeMappedCommandsMatching(Config.Events.ON_MINUTE, event.minuteNumber());
     }
 }
