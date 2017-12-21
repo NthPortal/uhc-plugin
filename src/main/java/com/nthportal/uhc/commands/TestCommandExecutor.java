@@ -85,12 +85,14 @@ public class TestCommandExecutor implements CommandExecutor {
                 doCountdownStart();
                 break;
             case Events.FULL_COUNTDOWN:
-                return doFullCountdown(sender);
+                doFullCountdown(sender);
+                break;
             case Events.START:
                 doStart();
                 break;
             case Events.FULL_START:
-                return doFullStart(sender);
+                doFullStart(sender);
+                break;
             case Events.STOP:
                 context.eventBus().post(new StopEvent());
                 break;
@@ -173,17 +175,15 @@ public class TestCommandExecutor implements CommandExecutor {
         context.eventBus().post(new CountdownStartEvent(Config.getCountdownFrom(context)));
     }
 
-    private boolean doFullCountdown(CommandSender sender) {
+    private void doFullCountdown(CommandSender sender) {
         val countdownFrom = Config.getCountdownFrom(context);
         if (countdownFrom == 0) {
             doCountdownStart();
-            return true;
         } else {
             val success = submitTask(countdownTask(countdownFrom));
             if (!success) {
                 alreadyTestingEvent(sender);
             }
-            return success;
         }
     }
 
@@ -217,12 +217,11 @@ public class TestCommandExecutor implements CommandExecutor {
         eventBus.post(new EpisodeStartEvent(1, length));
     }
 
-    private boolean doFullStart(CommandSender sender) {
+    private void doFullStart(CommandSender sender) {
         val countdownFrom = Config.getCountdownFrom(context);
         if (countdownFrom == 0) {
             doCountdownStart();
             doStart();
-            return true;
         } else {
             val success = submitTask(() -> {
                 countdownTask(countdownFrom).run();
@@ -233,7 +232,6 @@ public class TestCommandExecutor implements CommandExecutor {
             if (!success) {
                 alreadyTestingEvent(sender);
             }
-            return success;
         }
     }
 
