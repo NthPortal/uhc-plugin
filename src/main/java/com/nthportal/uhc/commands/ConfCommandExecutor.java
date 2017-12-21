@@ -1,8 +1,8 @@
 package com.nthportal.uhc.commands;
 
 import com.nthportal.uhc.core.Config;
+import com.nthportal.uhc.core.Timer;
 import com.nthportal.uhc.core.UHCPlugin;
-import com.nthportal.uhc.util.MessageUtil;
 import com.nthportal.uhc.util.Util;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -10,7 +10,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import java.util.*;
+import java.util.OptionalInt;
+import java.util.Set;
 
 import static com.nthportal.uhc.util.MessageUtil.sendError;
 import static com.nthportal.uhc.util.MessageUtil.sendSuccess;
@@ -21,6 +22,7 @@ public class ConfCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-conf";
 
     private final UHCPlugin plugin;
+    private final Timer timer;
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -33,6 +35,9 @@ public class ConfCommandExecutor implements CommandExecutor {
                 plugin.reloadConfig();
                 sendSuccess(sender, "Reloaded configuration from file");
                 break;
+            case Opts.HELP:
+                doHelp(sender, command);
+                break;
             case Opts.EPISODE_LENGTH:
                 if (args.length == 1) {
                     printEpisodeLength(sender);
@@ -40,6 +45,7 @@ public class ConfCommandExecutor implements CommandExecutor {
                     val length = validateNumericArg(sender, Util.arrayTail(args), Opts.EPISODE_LENGTH);
                     return length.isPresent() && updateEpisodeLength(sender, length.getAsInt());
                 }
+                break;
             case Opts.COUNTDOWN_FROM:
                 if (args.length == 1) {
                     printCountdownFrom(sender);
@@ -47,8 +53,6 @@ public class ConfCommandExecutor implements CommandExecutor {
                     val countdownFrom = validateNumericArg(sender, Util.arrayTail(args), Opts.COUNTDOWN_FROM);
                     return countdownFrom.isPresent() && updateCountdownFrom(sender, countdownFrom.getAsInt());
                 }
-            case Opts.HELP:
-                doHelp(sender, command);
                 break;
             default:
                 sendError(sender, "Invalid sub-command: " + args[0]);
@@ -64,7 +68,7 @@ public class ConfCommandExecutor implements CommandExecutor {
 
     private void printCountdownFrom(CommandSender sender) {
         val countdownFrom = plugin.getConfig().getInt(Opts.COUNTDOWN_FROM);
-        sender.sendMessage("UHCs count down from " + countdownFrom);
+        sender.sendMessage("UHC countdown starts at " + countdownFrom);
     }
 
     private OptionalInt validateNumericArg(CommandSender sender, String[] args, String subCommand) {
@@ -91,7 +95,9 @@ public class ConfCommandExecutor implements CommandExecutor {
         plugin.saveConfig();
 
         sendSuccess(sender, "Set UHC episode length to " + lengthInMinutes + " minute(s)");
-        sendWarning(sender, "New episode length will not be applied to a running UHC");
+        if (timer.state() != Timer.State.STOPPED) {
+            sendWarning(sender, "New episode length will not be applied to in-progress UHC");
+        }
         return true;
     }
 
@@ -104,7 +110,7 @@ public class ConfCommandExecutor implements CommandExecutor {
         plugin.getConfig().set(Config.COUNTDOWN_FROM, countdownFrom);
         plugin.saveConfig();
 
-        sendSuccess(sender, "The next UHC will count down from " + countdownFrom);
+        sendSuccess(sender, "Set UHC countdown to start at " + countdownFrom);
         return true;
     }
 
@@ -125,11 +131,11 @@ public class ConfCommandExecutor implements CommandExecutor {
         static final String EPISODE_LENGTH = Config.EPISODE_LENGTH;
         static final String COUNTDOWN_FROM = Config.COUNTDOWN_FROM;
 
-        static final Set<String> all = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+        static final Set<String> all = Util.unmodifiableSet(
                 RELOAD,
                 HELP,
                 EPISODE_LENGTH,
                 COUNTDOWN_FROM
-        )));
+        );
     }
 }
