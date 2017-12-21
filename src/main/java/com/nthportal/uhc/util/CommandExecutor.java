@@ -20,7 +20,7 @@ public class CommandExecutor {
     public CommandExecutor(Context context) {
         service = Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()
-                        .setNameFormat("uhc-plugin-cmd-executor")
+                        .setNameFormat("uhc-manager:cmd-executor")
                         .build()
         );
         this.context = context;

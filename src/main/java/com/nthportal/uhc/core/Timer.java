@@ -25,7 +25,7 @@ public final class Timer {
 
         service = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
-                        .setNameFormat("uhc-scheduler")
+                        .setNameFormat("uhc-manager:timer-scheduler")
                         .build()
         );
 

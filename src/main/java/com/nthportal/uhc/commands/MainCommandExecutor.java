@@ -21,7 +21,7 @@ public class MainCommandExecutor implements CommandExecutor {
 
     private final ExecutorService service = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder()
-                    .setNameFormat("uhc-plugin-uhc-starter")
+                    .setNameFormat("uhc-manager:timer-manager")
                     .build());
 
     private final Timer timer;
