@@ -127,8 +127,8 @@ public class ConfCommandExecutor implements CommandExecutor {
     static class Opts {
         static final String RELOAD = "reload";
         static final String HELP = "help";
-        static final String EPISODE_LENGTH = "episode-length";
-        static final String COUNTDOWN_FROM = "countdown-from";
+        static final String EPISODE_LENGTH = Config.EPISODE_LENGTH;
+        static final String COUNTDOWN_FROM = Config.COUNTDOWN_FROM;
 
         static final Set<String> set = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
                 RELOAD,

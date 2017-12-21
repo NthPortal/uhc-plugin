@@ -5,8 +5,8 @@ import lombok.val;
 import java.util.Collections;
 
 public class Config {
-    public static final String EPISODE_LENGTH = "episodeLength";
-    public static final String COUNTDOWN_FROM = "countdownFrom";
+    public static final String EPISODE_LENGTH = "episode-length";
+    public static final String COUNTDOWN_FROM = "countdown-from";
 
     public static final int DEFAULT_EPISODE_LENGTH = 20;
     public static final int DEFAULT_COUNTDOWN_FROM = 5;
@@ -36,16 +36,16 @@ public class Config {
     }
 
     public static class Events {
-        public static final String ON_COUNTDOWN_START = "onCountdownStart";
-        public static final String ON_COUNTDOWN_MARK = "onCountdownMark";
-        public static final String ON_START = "onStart";
-        public static final String ON_STOP = "onStop";
-        public static final String ON_PAUSE = "onPause";
-        public static final String ON_RESUME = "onResume";
-        public static final String ON_EPISODE_START = "onEpStart";
-        public static final String ON_EPISODE_END = "onEpEnd";
-        public static final String ON_DEATH = "onDeath";
-        public static final String ON_START_EP_NUM = "onStartEpNum";
-        public static final String ON_MINUTE = "onMinute";
+        public static final String ON_COUNTDOWN_START = "on-countdown-start";
+        public static final String ON_COUNTDOWN_MARK = "on-countdown-mark";
+        public static final String ON_START = "on-start";
+        public static final String ON_STOP = "on-stop";
+        public static final String ON_PAUSE = "on-pause";
+        public static final String ON_RESUME = "on-resume";
+        public static final String ON_EPISODE_START = "on-ep-start";
+        public static final String ON_EPISODE_END = "on-ep-end";
+        public static final String ON_DEATH = "on-death";
+        public static final String ON_START_EP_NUM = "on-start-ep-num";
+        public static final String ON_MINUTE = "on-minute";
     }
 }
