@@ -28,7 +28,7 @@ public final class UHCPlugin extends JavaPlugin {
         confCommand.setTabCompleter(new ConfCommandTabCompleter());
 
         val confTestCommand = getCommand(TestCommandExecutor.NAME);
-        confTestCommand.setExecutor(new TestCommandExecutor(context));
+        confTestCommand.setExecutor(new TestCommandExecutor(context, timer));
         confTestCommand.setTabCompleter(new TestCommandTabCompleter());
 
         getServer().getPluginManager().registerEvents(new DeathListener(context, timer), this);

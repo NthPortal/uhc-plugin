@@ -17,4 +17,13 @@ public final class MessageUtil {
     public static void sendError(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.RED + message);
     }
+
+    public static boolean missingPermission(CommandSender sender, String permission) {
+        if (sender.hasPermission(permission)) {
+            return true;
+        } else {
+            sendError(sender, "You don't have permission to run this command");
+            return false;
+        }
+    }
 }

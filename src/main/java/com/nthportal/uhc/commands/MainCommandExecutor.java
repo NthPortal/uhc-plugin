@@ -29,7 +29,12 @@ public class MainCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if ((args.length == 0) || (args.length > 1) || !sender.hasPermission(Permissions.UHC)) {
+        if (missingPermission(sender, Permissions.UHC)) {
+            return true;
+        } else if (args.length == 0) {
+            return false;
+        } else if (args.length > 1) {
+            sendError(sender, "Too many arguments");
             return false;
         }
 

@@ -3,6 +3,7 @@ package com.nthportal.uhc.commands;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.nthportal.uhc.core.Config;
 import com.nthportal.uhc.core.Context;
+import com.nthportal.uhc.core.Timer;
 import com.nthportal.uhc.events.*;
 import com.nthportal.uhc.util.Util;
 import lombok.RequiredArgsConstructor;
@@ -14,19 +15,20 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import static com.nthportal.uhc.util.MessageUtil.sendError;
+import static com.nthportal.uhc.util.MessageUtil.*;
 
 @RequiredArgsConstructor
 public class TestCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-test";
 
     private final Context context;
+    private final Timer timer;
     private final ExecutorService service = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder()
                     .setNameFormat("uhc-manager:config-tester")
@@ -52,16 +54,24 @@ public class TestCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if ((args.length == 0) || !sender.hasPermission(Permissions.CONFIGURE)) {
+        if (missingPermission(sender, Permissions.CONFIGURE)) {
+            return true;
+        } else if (args.length == 0) {
             return false;
         }
 
-        val event = args[0].toLowerCase();
-        if (Events.all.contains(event)) {
-            return doTest(sender, event, Util.arrayTail(args));
+        // Check permission to test UHC while in progress
+        if (sender.hasPermission(Permissions.UHC) || timer.state() == Timer.State.STOPPED) {
+            val event = args[0].toLowerCase();
+            if (Events.all.contains(event)) {
+                return doTest(sender, event, Util.arrayTail(args));
+            } else {
+                sendError(sender, "Invalid event: " + args[0]);
+                return false;
+            }
         } else {
-            sendError(sender, "Invalid event: " + args[0]);
-            return false;
+            sendError(sender, "You don't have permission to run this command while a UHC is in progress");
+            return true;
         }
     }
 
