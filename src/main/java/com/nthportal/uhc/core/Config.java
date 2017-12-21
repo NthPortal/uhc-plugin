@@ -38,8 +38,10 @@ public final class Config {
     }
 
     public static int getValidatedEpisodeLength(Context context) {
-        val plugin = context.plugin();
+        return getValidatedEpisodeLength(context.plugin());
+    }
 
+    public static int getValidatedEpisodeLength(UHCPlugin plugin) {
         int length = plugin.getConfig().getInt(EPISODE_LENGTH);
         if (length <= 0) {
             length = DEFAULT_EPISODE_LENGTH;
@@ -50,7 +52,11 @@ public final class Config {
     }
 
     public static int getCountdownFrom(Context context) {
-        return Math.max(context.plugin().getConfig().getInt(COUNTDOWN_FROM), 0);
+        return getCountdownFrom(context.plugin());
+    }
+
+    public static int getCountdownFrom(UHCPlugin plugin) {
+        return Math.max(plugin.getConfig().getInt(COUNTDOWN_FROM), 0);
     }
 
     public static class Events {

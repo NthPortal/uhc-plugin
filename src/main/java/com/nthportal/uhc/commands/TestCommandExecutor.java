@@ -58,7 +58,6 @@ public class TestCommandExecutor implements CommandExecutor {
 
         val event = args[0].toLowerCase();
         if (Events.all.contains(event)) {
-            context.plugin().reloadConfig();
             return doTest(sender, event, Util.arrayTail(args));
         } else {
             sendError(sender, "Invalid event: " + args[0]);
@@ -72,6 +71,7 @@ public class TestCommandExecutor implements CommandExecutor {
             return false;
         }
 
+        context.plugin().reloadConfig();
         if (args.length == 1) {
             return doTestHasArg(sender, event, args[0]);
         } else {
@@ -212,7 +212,7 @@ public class TestCommandExecutor implements CommandExecutor {
 
     private void doStart() {
         val eventBus = context.eventBus();
-        val length = context.plugin().getConfig().getInt(Config.EPISODE_LENGTH);
+        val length = Config.getValidatedEpisodeLength(context);
         eventBus.post(new StartEvent());
         eventBus.post(new EpisodeStartEvent(1, length));
     }
@@ -237,7 +237,7 @@ public class TestCommandExecutor implements CommandExecutor {
 
     private void doEpisodeChange(int episodeNumber) {
         val eventBus = context.eventBus();
-        val length = context.plugin().getConfig().getInt(Config.EPISODE_LENGTH);
+        val length = Config.getValidatedEpisodeLength(context);
         val minute = length * episodeNumber;
         eventBus.post(new EpisodeEndEvent(episodeNumber, length));
         eventBus.post(new EpisodeStartEvent(episodeNumber + 1, length));

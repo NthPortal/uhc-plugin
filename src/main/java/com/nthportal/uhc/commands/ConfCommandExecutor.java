@@ -13,9 +13,7 @@ import org.bukkit.command.CommandSender;
 import java.util.OptionalInt;
 import java.util.Set;
 
-import static com.nthportal.uhc.util.MessageUtil.sendError;
-import static com.nthportal.uhc.util.MessageUtil.sendSuccess;
-import static com.nthportal.uhc.util.MessageUtil.sendWarning;
+import static com.nthportal.uhc.util.MessageUtil.*;
 
 @RequiredArgsConstructor
 public class ConfCommandExecutor implements CommandExecutor {
@@ -62,12 +60,12 @@ public class ConfCommandExecutor implements CommandExecutor {
     }
 
     private void printEpisodeLength(CommandSender sender) {
-        val episodeLength = plugin.getConfig().getInt(Opts.EPISODE_LENGTH);
+        val episodeLength = Config.getValidatedEpisodeLength(plugin);
         sender.sendMessage("UHC episode length is " + episodeLength + " minute(s)");
     }
 
     private void printCountdownFrom(CommandSender sender) {
-        val countdownFrom = plugin.getConfig().getInt(Opts.COUNTDOWN_FROM);
+        val countdownFrom = Config.getCountdownFrom(plugin);
         sender.sendMessage("UHC countdown starts at " + countdownFrom);
     }
 
