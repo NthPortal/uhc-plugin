@@ -13,8 +13,8 @@ public class MainCommandTabCompleter implements TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length != 1) {
             return Collections.emptyList();
+        } else {
+            return Util.filterAndSort(MainCommandExecutor.Opts.set, args[0]);
         }
-
-        return Util.filterAndCollect(MainCommandExecutor.Opts.set, args[0]);
     }
 }

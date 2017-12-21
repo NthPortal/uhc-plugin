@@ -5,16 +5,16 @@ import lombok.val;
 import java.util.Collections;
 
 public class Config {
-    public static final String EPISODE_TIME = "episodeTime";
+    public static final String EPISODE_LENGTH = "episodeLength";
     public static final String COUNTDOWN_FROM = "countdownFrom";
 
-    public static final int DEFAULT_EPISODE_TIME = 20;
+    public static final int DEFAULT_EPISODE_LENGTH = 20;
     public static final int DEFAULT_COUNTDOWN_FROM = 5;
 
     public static void setup(UHCPlugin plugin) {
         val config = plugin.getConfig();
 
-        config.addDefault(EPISODE_TIME, DEFAULT_EPISODE_TIME);
+        config.addDefault(EPISODE_LENGTH, DEFAULT_EPISODE_LENGTH);
         config.addDefault(COUNTDOWN_FROM, DEFAULT_COUNTDOWN_FROM);
 
         val emptyList = Collections.emptyList();

@@ -7,6 +7,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -56,13 +58,11 @@ public class MainCommandExecutor implements CommandExecutor {
         static final String PAUSE = "pause";
         static final String RESUME = "resume";
 
-        static final Set<String> set = new HashSet<>();
-
-        static {
-            set.add(START);
-            set.add(STOP);
-            set.add(PAUSE);
-            set.add(RESUME);
-        }
+        static final Set<String> set = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+                START,
+                STOP,
+                PAUSE,
+                RESUME
+        )));
     }
 }

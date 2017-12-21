@@ -245,10 +245,10 @@ public final class Timer {
         private static int getValidatedEpisodeLength(Context context) {
             val plugin = context.plugin();
 
-            int length = plugin.getConfig().getInt(Config.EPISODE_TIME);
+            int length = plugin.getConfig().getInt(Config.EPISODE_LENGTH);
             if (length <= 0) {
-                length = Config.DEFAULT_EPISODE_TIME;
-                plugin.getConfig().set(Config.EPISODE_TIME, length);
+                length = Config.DEFAULT_EPISODE_LENGTH;
+                plugin.getConfig().set(Config.EPISODE_LENGTH, length);
                 plugin.saveConfig();
             }
             return length;
