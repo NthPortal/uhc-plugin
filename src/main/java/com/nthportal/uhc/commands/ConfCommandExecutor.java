@@ -11,7 +11,6 @@ import java.util.*;
 
 public class ConfCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-conf";
-    public static final String PERMISSION = "uhc-manager.uhc-conf";
 
     private final UHCPlugin plugin;
 
@@ -21,7 +20,7 @@ public class ConfCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String label, String[] strings) {
-        if ((strings.length == 0) || !commandSender.hasPermission(PERMISSION)) {
+        if ((strings.length == 0) || !commandSender.hasPermission(Permissions.CONFIGURE)) {
             return false;
         }
 

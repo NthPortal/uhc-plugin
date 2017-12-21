@@ -17,7 +17,6 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class MainCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc";
-    public static final String PERMISSION = "uhc-manager.uhc";
 
     private final ExecutorService service = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder()
@@ -28,7 +27,7 @@ public class MainCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(final CommandSender commandSender, Command command, String label, String[] strings) {
-        if ((strings.length == 0) || (strings.length > 1) || !commandSender.hasPermission(PERMISSION)) {
+        if ((strings.length == 0) || (strings.length > 1) || !commandSender.hasPermission(Permissions.UHC)) {
             return false;
         }
 
