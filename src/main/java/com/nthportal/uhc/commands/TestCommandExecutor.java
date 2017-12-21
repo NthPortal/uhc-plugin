@@ -117,7 +117,7 @@ public class TestCommandExecutor implements CommandExecutor {
                 sendError(sender, "Event '" + event + "' requires numeric argument");
                 return false;
             }
-        } else if (Events.acceptingPlayerArg.contains((event))) {
+        } else if (Events.acceptingPlayerArg.contains(event)) {
             val player = Bukkit.getPlayerExact(arg);
             if (player == null) {
                 sendError(sender, "Player not found: " + arg);
