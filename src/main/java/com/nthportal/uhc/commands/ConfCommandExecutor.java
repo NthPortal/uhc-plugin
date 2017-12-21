@@ -2,6 +2,7 @@ package com.nthportal.uhc.commands;
 
 import com.nthportal.uhc.core.Config;
 import com.nthportal.uhc.core.UHCPlugin;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,14 +10,11 @@ import org.bukkit.command.CommandSender;
 
 import java.util.*;
 
+@RequiredArgsConstructor
 public class ConfCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-conf";
 
     private final UHCPlugin plugin;
-
-    public ConfCommandExecutor(UHCPlugin plugin) {
-        this.plugin = plugin;
-    }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String label, String[] strings) {
@@ -92,7 +90,7 @@ public class ConfCommandExecutor implements CommandExecutor {
         plugin.getConfig().set(Config.EPISODE_LENGTH, lengthInMinutes);
         plugin.saveConfig();
 
-        commandSender.sendMessage(new String[] {
+        commandSender.sendMessage(new String[]{
                 "Set UHC episode length to " + lengthInMinutes + " minute(s)",
                 "New episode length will not be applied to a running UHC",
         });
@@ -114,13 +112,13 @@ public class ConfCommandExecutor implements CommandExecutor {
 
     private void doHelp(CommandSender commandSender, Command command) {
         val name = command.getName();
-        commandSender.sendMessage(new String[] {
+        commandSender.sendMessage(new String[]{
                 "-------- " + name + " help --------",
                 "/" + name + " " + Opts.RELOAD + " - reloads configuration from file",
                 "/" + name + " " + Opts.EPISODE_LENGTH + " <LENGTH IN MINUTES> - sets the episode length",
                 "/" + name + " " + Opts.COUNTDOWN_FROM + " <NUMBER> - sets the number from which the UHC countdown starts",
                 "-------- " + name + " help --------"
-                });
+        });
     }
 
     static class Opts {
