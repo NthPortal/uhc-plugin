@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.nthportal.uhc.util.MessageUtil.*;
+
 @RequiredArgsConstructor
 public class MainCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc";
@@ -33,22 +35,34 @@ public class MainCommandExecutor implements CommandExecutor {
 
         switch (args[0].toLowerCase()) {
             case Opts.START:
-                service.submit(() -> sender.sendMessage(timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused, in the middle of starting, or already running"));
+                service.submit(() -> sendStatus(sender, timer.start(),
+                        "Started UHC",
+                        "Unable to start UHC - UHC paused, in the middle of starting, or already running"));
                 break;
             case Opts.STOP:
-                service.submit(() -> sender.sendMessage(timer.stop() ? "Stopped UHC" : "Unable to stop UHC - UHC already stopped"));
+                service.submit(() -> sendStatus(sender, timer.stop(),
+                        "Stopped UHC",
+                        "Unable to stop UHC - UHC already stopped"));
                 break;
             case Opts.PAUSE:
-                service.submit(() -> sender.sendMessage(timer.pause() ? "Paused UHC" : "Unable to pause UHC - UHC not running, in the middle of starting, or already paused"));
+                service.submit(() -> sendStatus(sender, timer.pause(), "Paused UHC", "Unable to pause UHC - UHC not running, in the middle of starting, or already paused"));
                 break;
             case Opts.RESUME:
-                service.submit(() -> sender.sendMessage(timer.resume() ? "Resumed UHC" : "Unable to resume UHC - UHC not paused"));
+                service.submit(() -> sendStatus(sender, timer.resume(), "Resumed UHC", "Unable to resume UHC - UHC not paused"));
                 break;
             default:
-                sender.sendMessage("Invalid sub-command: " + args[0]);
+                sendError(sender, "Invalid sub-command: " + args[0]);
                 return false;
         }
         return true;
+    }
+
+    private static void sendStatus(CommandSender sender, boolean condition, String onSuccess, String onFailure) {
+        if (condition) {
+            sendSuccess(sender, onSuccess);
+        } else {
+            sendError(sender, onFailure);
+        }
     }
 
     static class Opts {

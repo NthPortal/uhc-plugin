@@ -20,6 +20,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import static com.nthportal.uhc.util.MessageUtil.sendError;
+
 @RequiredArgsConstructor
 public class TestCommandExecutor implements CommandExecutor {
     public static final String NAME = "uhc-test";
@@ -59,14 +61,14 @@ public class TestCommandExecutor implements CommandExecutor {
             context.plugin().reloadConfig();
             return doTest(sender, event, Util.arrayTail(args));
         } else {
-            sender.sendMessage("Invalid event: " + args[0]);
+            sendError(sender, "Invalid event: " + args[0]);
             return false;
         }
     }
 
     private boolean doTest(CommandSender sender, String event, String[] args) {
         if (args.length > 1) {
-            sender.sendMessage("Too many arguments");
+            sendError(sender, "Too many arguments");
             return false;
         }
 
@@ -99,7 +101,7 @@ public class TestCommandExecutor implements CommandExecutor {
                 context.eventBus().post(new ResumeEvent(0));
                 break;
             default:
-                sender.sendMessage("Event '" + event + "' requires argument");
+                sendError(sender, "Event '" + event + "' requires argument");
         }
         return true;
     }
@@ -110,13 +112,13 @@ public class TestCommandExecutor implements CommandExecutor {
                 val number = Integer.parseInt(arg);
                 return doTestNumericArg(sender, event, number);
             } catch (NumberFormatException ignored) {
-                sender.sendMessage("Event '" + event + "' requires numeric argument");
+                sendError(sender, "Event '" + event + "' requires numeric argument");
                 return false;
             }
         } else if (Events.acceptingPlayerArg.contains((event))) {
             val player = Bukkit.getPlayerExact(arg);
             if (player == null) {
-                sender.sendMessage("Player not found: " + arg);
+                sendError(sender, "Player not found: " + arg);
                 return false;
             } else {
                 return doTestPlayerArg(sender, event, player);
@@ -128,10 +130,10 @@ public class TestCommandExecutor implements CommandExecutor {
 
     private boolean doTestNumericArg(CommandSender sender, String event, int number) {
         if (number <= 0) {
-            sender.sendMessage("Number argument must be positive");
+            sendError(sender, "Number argument must be positive");
             return false;
         } else if (number > Short.MAX_VALUE) { // Sanity check
-            sender.sendMessage("Number argument too large");
+            sendError(sender, "Number argument too large");
             return false;
         }
 
@@ -163,7 +165,7 @@ public class TestCommandExecutor implements CommandExecutor {
     }
 
     private boolean doTestStringArg(CommandSender sender, String event, String arg) {
-        sender.sendMessage("Event '" + event + "'does not take args");
+        sendError(sender, "Event '" + event + "'does not take args");
         return false;
     }
 
@@ -205,7 +207,7 @@ public class TestCommandExecutor implements CommandExecutor {
     }
 
     private void alreadyTestingEvent(CommandSender sender) {
-        sender.sendMessage("Already testing another event");
+        sendError(sender, "Already testing another extended event");
     }
 
     private void doStart() {

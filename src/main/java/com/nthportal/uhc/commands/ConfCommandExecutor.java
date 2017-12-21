@@ -2,6 +2,7 @@ package com.nthportal.uhc.commands;
 
 import com.nthportal.uhc.core.Config;
 import com.nthportal.uhc.core.UHCPlugin;
+import com.nthportal.uhc.util.MessageUtil;
 import com.nthportal.uhc.util.Util;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -10,6 +11,10 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
+
+import static com.nthportal.uhc.util.MessageUtil.sendError;
+import static com.nthportal.uhc.util.MessageUtil.sendSuccess;
+import static com.nthportal.uhc.util.MessageUtil.sendWarning;
 
 @RequiredArgsConstructor
 public class ConfCommandExecutor implements CommandExecutor {
@@ -26,7 +31,7 @@ public class ConfCommandExecutor implements CommandExecutor {
         switch (args[0].toLowerCase()) {
             case Opts.RELOAD:
                 plugin.reloadConfig();
-                sender.sendMessage("Reloaded configuration from file");
+                sendSuccess(sender, "Reloaded configuration from file");
                 break;
             case Opts.EPISODE_LENGTH:
                 if (args.length == 1) {
@@ -46,7 +51,7 @@ public class ConfCommandExecutor implements CommandExecutor {
                 doHelp(sender, command);
                 break;
             default:
-                sender.sendMessage("Invalid sub-command: " + args[0]);
+                sendError(sender, "Invalid sub-command: " + args[0]);
                 return false;
         }
         return true;
@@ -64,12 +69,12 @@ public class ConfCommandExecutor implements CommandExecutor {
 
     private OptionalInt validateNumericArg(CommandSender sender, String[] args, String subCommand) {
         if (args.length > 1) {
-            sender.sendMessage("Too many arguments for sub-command: " + subCommand);
+            sendError(sender, "Too many arguments for sub-command: " + subCommand);
         } else {
             try {
                 return OptionalInt.of(Integer.parseInt(args[0]));
             } catch (NumberFormatException ignored) {
-                sender.sendMessage(args[0] + " is not a number");
+                sendError(sender, args[0] + " is not a number");
             }
         }
 
@@ -78,30 +83,28 @@ public class ConfCommandExecutor implements CommandExecutor {
 
     private boolean updateEpisodeLength(CommandSender sender, int lengthInMinutes) {
         if (lengthInMinutes <= 0) {
-            sender.sendMessage("Episode length must be a positive number");
+            sendError(sender, "Episode length must be a positive number");
             return false;
         }
 
         plugin.getConfig().set(Config.EPISODE_LENGTH, lengthInMinutes);
         plugin.saveConfig();
 
-        sender.sendMessage(new String[]{
-                "Set UHC episode length to " + lengthInMinutes + " minute(s)",
-                "New episode length will not be applied to a running UHC",
-        });
+        sendSuccess(sender, "Set UHC episode length to " + lengthInMinutes + " minute(s)");
+        sendWarning(sender, "New episode length will not be applied to a running UHC");
         return true;
     }
 
     private boolean updateCountdownFrom(CommandSender sender, int countdownFrom) {
         if (countdownFrom < 0) {
-            sender.sendMessage("Countdown cannot be from a negative number ('0' disables countdown)");
+            sendError(sender, "Countdown cannot be from a negative number ('0' disables countdown)");
             return false;
         }
 
         plugin.getConfig().set(Config.COUNTDOWN_FROM, countdownFrom);
         plugin.saveConfig();
 
-        sender.sendMessage("The next UHC will count down from " + countdownFrom);
+        sendSuccess(sender, "The next UHC will count down from " + countdownFrom);
         return true;
     }
 
