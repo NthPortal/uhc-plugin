@@ -13,7 +13,15 @@ commands:
     description: Configure the UHC game
     usage: |
       /uhc-conf <reload|help>
-      /uhc-conf episode-length <LENGTH IN MINUTES>
-      /uhc-conf countdown-from <NUMBER>
+      /uhc-conf episode-length [LENGTH IN MINUTES]
+      /uhc-conf countdown-from [NUMBER]
+    permission: uhc-manager.configure
+    permission-message: You don't have permission to run this command
+  uhc-test:
+    description: Test UHC Events
+    usage: |
+      /uhc-test <countdown-start|full-countdown|start|full-start>
+      /uhc-test <countdown-mark|episode-change|minute> <NUMBER>
+      /uhc-test <death> <PLAYER>
     permission: uhc-manager.configure
     permission-message: You don't have permission to run this command

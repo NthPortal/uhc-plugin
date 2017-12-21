@@ -14,7 +14,7 @@ public class ConfCommandTabCompleter implements TabCompleter {
         if (args.length != 1) {
             return Collections.emptyList();
         } else {
-            return Util.filterAndSort(ConfCommandExecutor.Opts.set, args[0]);
+            return Util.filterAndSort(ConfCommandExecutor.Opts.all, args[0]);
         }
     }
 }

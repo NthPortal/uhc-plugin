@@ -1,9 +1,6 @@
 package com.nthportal.uhc.core;
 
-import com.nthportal.uhc.commands.ConfCommandExecutor;
-import com.nthportal.uhc.commands.ConfCommandTabCompleter;
-import com.nthportal.uhc.commands.MainCommandExecutor;
-import com.nthportal.uhc.commands.MainCommandTabCompleter;
+import com.nthportal.uhc.commands.*;
 import com.nthportal.uhc.events.MainListener;
 import com.nthportal.uhc.util.CommandExecutor;
 import com.google.common.eventbus.EventBus;
@@ -29,6 +26,10 @@ public final class UHCPlugin extends JavaPlugin {
         val confCommand = getCommand(ConfCommandExecutor.NAME);
         confCommand.setExecutor(new ConfCommandExecutor(this));
         confCommand.setTabCompleter(new ConfCommandTabCompleter());
+
+        val confTestCommand = getCommand(TestCommandExecutor.NAME);
+        confTestCommand.setExecutor(new TestCommandExecutor(context));
+        confTestCommand.setTabCompleter(new TestCommandTabCompleter());
 
         getServer().getPluginManager().registerEvents(new DeathListener(context, timer), this);
 

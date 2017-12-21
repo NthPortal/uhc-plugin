@@ -57,7 +57,7 @@ public class MainCommandExecutor implements CommandExecutor {
         static final String PAUSE = "pause";
         static final String RESUME = "resume";
 
-        static final Set<String> set = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+        static final Set<String> all = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
                 START,
                 STOP,
                 PAUSE,

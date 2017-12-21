@@ -8,13 +8,13 @@ import org.bukkit.command.TabCompleter;
 import java.util.Collections;
 import java.util.List;
 
-public class MainCommandTabCompleter implements TabCompleter {
+public class TestCommandTabCompleter implements TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length != 1) {
             return Collections.emptyList();
         } else {
-            return Util.filterAndSort(MainCommandExecutor.Opts.all, args[0]);
+            return Util.filterAndSort(TestCommandExecutor.Events.all, args[0]);
         }
     }
 }

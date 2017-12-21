@@ -37,6 +37,22 @@ public final class Config {
         plugin.saveConfig();
     }
 
+    public static int getValidatedEpisodeLength(Context context) {
+        val plugin = context.plugin();
+
+        int length = plugin.getConfig().getInt(EPISODE_LENGTH);
+        if (length <= 0) {
+            length = DEFAULT_EPISODE_LENGTH;
+            plugin.getConfig().set(EPISODE_LENGTH, length);
+            plugin.saveConfig();
+        }
+        return length;
+    }
+
+    public static int getCountdownFrom(Context context) {
+        return Math.max(context.plugin().getConfig().getInt(COUNTDOWN_FROM), 0);
+    }
+
     public static class Events {
         public static final String ON_COUNTDOWN_START = "on-countdown-start";
         public static final String ON_COUNTDOWN_MARK = "on-countdown-mark";

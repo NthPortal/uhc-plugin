@@ -2,6 +2,7 @@ package com.nthportal.uhc.commands;
 
 import com.nthportal.uhc.core.Config;
 import com.nthportal.uhc.core.UHCPlugin;
+import com.nthportal.uhc.util.Util;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.bukkit.command.Command;
@@ -31,20 +32,14 @@ public class ConfCommandExecutor implements CommandExecutor {
                 if (args.length == 1) {
                     printEpisodeLength(sender);
                 } else {
-                    val length = validateNumericArg(
-                            sender,
-                            Arrays.copyOfRange(args, 1, args.length),
-                            Opts.EPISODE_LENGTH);
+                    val length = validateNumericArg(sender, Util.arrayTail(args), Opts.EPISODE_LENGTH);
                     return length.isPresent() && updateEpisodeLength(sender, length.getAsInt());
                 }
             case Opts.COUNTDOWN_FROM:
                 if (args.length == 1) {
                     printCountdownFrom(sender);
                 } else {
-                    val countdownFrom = validateNumericArg(
-                            sender,
-                            Arrays.copyOfRange(args, 1, args.length),
-                            Opts.COUNTDOWN_FROM);
+                    val countdownFrom = validateNumericArg(sender, Util.arrayTail(args), Opts.COUNTDOWN_FROM);
                     return countdownFrom.isPresent() && updateCountdownFrom(sender, countdownFrom.getAsInt());
                 }
             case Opts.HELP:
@@ -127,7 +122,7 @@ public class ConfCommandExecutor implements CommandExecutor {
         static final String EPISODE_LENGTH = Config.EPISODE_LENGTH;
         static final String COUNTDOWN_FROM = Config.COUNTDOWN_FROM;
 
-        static final Set<String> set = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+        static final Set<String> all = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
                 RELOAD,
                 HELP,
                 EPISODE_LENGTH,

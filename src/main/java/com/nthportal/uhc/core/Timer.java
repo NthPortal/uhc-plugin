@@ -239,23 +239,7 @@ public final class Timer {
         int countdownFrom;
 
         static ConfigInfo fromConfig(Context context) {
-            return new ConfigInfo(getValidatedEpisodeLength(context), getCountdownFrom(context));
-        }
-
-        private static int getValidatedEpisodeLength(Context context) {
-            val plugin = context.plugin();
-
-            int length = plugin.getConfig().getInt(Config.EPISODE_LENGTH);
-            if (length <= 0) {
-                length = Config.DEFAULT_EPISODE_LENGTH;
-                plugin.getConfig().set(Config.EPISODE_LENGTH, length);
-                plugin.saveConfig();
-            }
-            return length;
-        }
-
-        private static int getCountdownFrom(Context context) {
-            return Math.max(context.plugin().getConfig().getInt(Config.COUNTDOWN_FROM), 0);
+            return new ConfigInfo(Config.getValidatedEpisodeLength(context), Config.getCountdownFrom(context));
         }
     }
 
