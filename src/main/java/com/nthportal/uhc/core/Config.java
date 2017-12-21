@@ -4,7 +4,9 @@ import lombok.val;
 
 import java.util.Collections;
 
-public class Config {
+public final class Config {
+    private Config() {}
+
     public static final String EPISODE_LENGTH = "episode-length";
     public static final String COUNTDOWN_FROM = "countdown-from";
 
