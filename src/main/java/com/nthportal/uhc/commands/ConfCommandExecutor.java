@@ -17,102 +17,102 @@ public class ConfCommandExecutor implements CommandExecutor {
     private final UHCPlugin plugin;
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String label, String[] strings) {
-        if ((strings.length == 0) || !commandSender.hasPermission(Permissions.CONFIGURE)) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if ((args.length == 0) || !sender.hasPermission(Permissions.CONFIGURE)) {
             return false;
         }
 
-        switch (strings[0].toLowerCase()) {
+        switch (args[0].toLowerCase()) {
             case Opts.RELOAD:
                 plugin.reloadConfig();
-                commandSender.sendMessage("Reloaded configuration from file");
+                sender.sendMessage("Reloaded configuration from file");
                 break;
             case Opts.EPISODE_LENGTH:
-                if (strings.length == 1) {
-                    printEpisodeLength(commandSender);
+                if (args.length == 1) {
+                    printEpisodeLength(sender);
                 } else {
-                    Integer length = validateNumericArg(
-                            commandSender,
-                            Arrays.copyOfRange(strings, 1, strings.length),
+                    val length = validateNumericArg(
+                            sender,
+                            Arrays.copyOfRange(args, 1, args.length),
                             Opts.EPISODE_LENGTH);
-                    return length != null && updateEpisodeLength(commandSender, length);
+                    return length.isPresent() && updateEpisodeLength(sender, length.getAsInt());
                 }
             case Opts.COUNTDOWN_FROM:
-                if (strings.length == 1) {
-                    printCountdownFrom(commandSender);
+                if (args.length == 1) {
+                    printCountdownFrom(sender);
                 } else {
-                    Integer countdownFrom = validateNumericArg(
-                            commandSender,
-                            Arrays.copyOfRange(strings, 1, strings.length),
+                    val countdownFrom = validateNumericArg(
+                            sender,
+                            Arrays.copyOfRange(args, 1, args.length),
                             Opts.COUNTDOWN_FROM);
-                    return countdownFrom != null && updateCountdownFrom(commandSender, countdownFrom);
+                    return countdownFrom.isPresent() && updateCountdownFrom(sender, countdownFrom.getAsInt());
                 }
             case Opts.HELP:
-                doHelp(commandSender, command);
+                doHelp(sender, command);
                 break;
             default:
-                commandSender.sendMessage("Invalid sub-command: " + strings[0]);
+                sender.sendMessage("Invalid sub-command: " + args[0]);
                 return false;
         }
         return true;
     }
 
-    private void printEpisodeLength(CommandSender commandSender) {
+    private void printEpisodeLength(CommandSender sender) {
         val episodeLength = plugin.getConfig().getInt(Opts.EPISODE_LENGTH);
-        commandSender.sendMessage("UHC episode length is " + episodeLength + " minute(s)");
+        sender.sendMessage("UHC episode length is " + episodeLength + " minute(s)");
     }
 
-    private void printCountdownFrom(CommandSender commandSender) {
+    private void printCountdownFrom(CommandSender sender) {
         val countdownFrom = plugin.getConfig().getInt(Opts.COUNTDOWN_FROM);
-        commandSender.sendMessage("UHCs count down from " + countdownFrom);
+        sender.sendMessage("UHCs count down from " + countdownFrom);
     }
 
-    private Integer validateNumericArg(CommandSender commandSender, String[] args, String subCommand) {
+    private OptionalInt validateNumericArg(CommandSender sender, String[] args, String subCommand) {
         if (args.length > 1) {
-            commandSender.sendMessage("Too many arguments for sub-command: " + subCommand);
+            sender.sendMessage("Too many arguments for sub-command: " + subCommand);
         } else {
             try {
-                return Integer.parseInt(args[0]);
+                return OptionalInt.of(Integer.parseInt(args[0]));
             } catch (NumberFormatException ignored) {
-                commandSender.sendMessage(args[0] + " is not a number");
+                sender.sendMessage(args[0] + " is not a number");
             }
         }
 
-        return null;
+        return OptionalInt.empty();
     }
 
-    private boolean updateEpisodeLength(CommandSender commandSender, int lengthInMinutes) {
+    private boolean updateEpisodeLength(CommandSender sender, int lengthInMinutes) {
         if (lengthInMinutes <= 0) {
-            commandSender.sendMessage("Episode length must be a positive number");
+            sender.sendMessage("Episode length must be a positive number");
             return false;
         }
 
         plugin.getConfig().set(Config.EPISODE_LENGTH, lengthInMinutes);
         plugin.saveConfig();
 
-        commandSender.sendMessage(new String[]{
+        sender.sendMessage(new String[]{
                 "Set UHC episode length to " + lengthInMinutes + " minute(s)",
                 "New episode length will not be applied to a running UHC",
         });
         return true;
     }
 
-    private boolean updateCountdownFrom(CommandSender commandSender, int countdownFrom) {
+    private boolean updateCountdownFrom(CommandSender sender, int countdownFrom) {
         if (countdownFrom < 0) {
-            commandSender.sendMessage("Countdown cannot be from a negative number ('0' disables countdown)");
+            sender.sendMessage("Countdown cannot be from a negative number ('0' disables countdown)");
             return false;
         }
 
         plugin.getConfig().set(Config.COUNTDOWN_FROM, countdownFrom);
         plugin.saveConfig();
 
-        commandSender.sendMessage("The next UHC will count down from " + countdownFrom);
+        sender.sendMessage("The next UHC will count down from " + countdownFrom);
         return true;
     }
 
-    private void doHelp(CommandSender commandSender, Command command) {
+    private void doHelp(CommandSender sender, Command command) {
         val name = command.getName();
-        commandSender.sendMessage(new String[]{
+        sender.sendMessage(new String[]{
                 "-------- " + name + " help --------",
                 "/" + name + " " + Opts.RELOAD + " - reloads configuration from file",
                 "/" + name + " " + Opts.EPISODE_LENGTH + " <LENGTH IN MINUTES> - sets the episode length",

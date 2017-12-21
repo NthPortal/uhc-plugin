@@ -26,26 +26,26 @@ public class MainCommandExecutor implements CommandExecutor {
     private final Timer timer;
 
     @Override
-    public boolean onCommand(final CommandSender commandSender, Command command, String label, String[] strings) {
-        if ((strings.length == 0) || (strings.length > 1) || !commandSender.hasPermission(Permissions.UHC)) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if ((args.length == 0) || (args.length > 1) || !sender.hasPermission(Permissions.UHC)) {
             return false;
         }
 
-        switch (strings[0].toLowerCase()) {
+        switch (args[0].toLowerCase()) {
             case Opts.START:
-                service.submit(() -> commandSender.sendMessage(timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused, in the middle of starting, or already running"));
+                service.submit(() -> sender.sendMessage(timer.start() ? "Started UHC" : "Unable to start UHC - UHC paused, in the middle of starting, or already running"));
                 break;
             case Opts.STOP:
-                service.submit(() -> commandSender.sendMessage(timer.stop() ? "Stopped UHC" : "Unable to stop UHC - UHC already stopped"));
+                service.submit(() -> sender.sendMessage(timer.stop() ? "Stopped UHC" : "Unable to stop UHC - UHC already stopped"));
                 break;
             case Opts.PAUSE:
-                service.submit(() -> commandSender.sendMessage(timer.pause() ? "Paused UHC" : "Unable to pause UHC - UHC not running, in the middle of starting, or already paused"));
+                service.submit(() -> sender.sendMessage(timer.pause() ? "Paused UHC" : "Unable to pause UHC - UHC not running, in the middle of starting, or already paused"));
                 break;
             case Opts.RESUME:
-                service.submit(() -> commandSender.sendMessage(timer.resume() ? "Resumed UHC" : "Unable to resume UHC - UHC not paused"));
+                service.submit(() -> sender.sendMessage(timer.resume() ? "Resumed UHC" : "Unable to resume UHC - UHC not paused"));
                 break;
             default:
-                commandSender.sendMessage("Invalid sub-command: " + strings[0]);
+                sender.sendMessage("Invalid sub-command: " + args[0]);
                 return false;
         }
         return true;
