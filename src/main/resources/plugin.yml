@@ -7,7 +7,7 @@ commands:
   uhc:
     description: Control the UHC game
     usage: /uhc <start|stop|pause|resume>
-    permission: uhc-plugin.uhc
+    permission: uhc-manager.uhc
     permission-message: You don't have permission to run this command
   uhc-conf:
     description: Configure the UHC game
@@ -20,5 +20,5 @@ commands:
       /uhc-conf on {EVENT} move <TARGET INDEX> <DESTINATION INDEX>
       'add' and 'move' place the command before the specified index
       {EVENT}: <start|stop|pause|resume|countdownStart|countdownMark|epStart|epEnd|death>
-    permission: uhc-plugin.uhc-conf
+    permission: uhc-manager.uhc-conf
     permission-message: You don't have permission to run this command
