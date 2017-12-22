@@ -81,14 +81,16 @@ public class MainListener {
 
     @Subscribe
     public void onEpisodeStart(EpisodeStartEvent event) {
+        val minutesReplacement = replacement(ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed()));
         val replacements = Arrays.asList(
                 replacement(ReplaceTargets.EPISODE, String.valueOf(event.episodeNumber())),
-                replacement(ReplaceTargets.MINUTES, String.valueOf(event.minutesElapsed()))
+                minutesReplacement
         );
         executor.executeEventCommands(Config.Events.ON_EPISODE_START, replacements);
 
         // Run episode-specific commands
-        executor.executeMappedCommandsMatchingInt(Config.Events.ON_START_EP_NUM, event.episodeNumber());
+        executor.executeMappedCommandsMatchingInt(Config.Events.ON_START_EP_NUM, event.episodeNumber(),
+                Collections.singleton(minutesReplacement));
     }
 
     @Subscribe
