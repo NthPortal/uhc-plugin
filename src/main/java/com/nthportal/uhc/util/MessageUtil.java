@@ -20,10 +20,10 @@ public final class MessageUtil {
 
     public static boolean missingPermission(CommandSender sender, String permission) {
         if (sender.hasPermission(permission)) {
-            return true;
+            return false;
         } else {
             sendError(sender, "You don't have permission to run this command");
-            return false;
+            return true;
         }
     }
 }
