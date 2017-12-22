@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -41,13 +42,13 @@ public class CommandExecutor {
                 .forEach(this::executeCommand);
     }
 
-    public <T> void executeMappedCommandsMatching(String event, T toMatch, Function<String, Optional<T>> fromString) {
-        executeMappedCommandsMatching(event, toMatch, fromString, Collections.emptyList());
+    public <T> void executeMappedCommandsMatching(String event, T toMatch, BiPredicate<String, T> matcher) {
+        executeMappedCommandsMatching(event, toMatch, matcher, Collections.emptyList());
     }
 
     public <T> void executeMappedCommandsMatching(String event,
                                                   T toMatch,
-                                                  Function<String, Optional<T>> fromString,
+                                                  BiPredicate<String, T> matcher,
                                                   Collection<Function<String, String>> replacements) {
         val replacer = combineReplacements(replacements);
         val mapList = context.plugin().getConfig().getMapList(event);
@@ -55,11 +56,9 @@ public class CommandExecutor {
             for (val entry : map.entrySet()) {
                 val key = entry.getKey().toString();
                 val command = entry.getValue().toString();
-                fromString.apply(key).ifPresent(value -> {
-                    if (toMatch.equals(value)) {
-                        executeCommandWithReplacements(command, replacer);
-                    }
-                });
+                if (matcher.test(key, toMatch)) {
+                    executeCommandWithReplacements(command, replacer);
+                }
             }
         }
     }
@@ -71,12 +70,12 @@ public class CommandExecutor {
     public void executeMappedCommandsMatchingInt(String event,
                                                  int toMatch,
                                                  Collection<Function<String, String>> replacements) {
-        executeMappedCommandsMatching(event, toMatch, s -> {
+        executeMappedCommandsMatching(event, toMatch, (s, i) -> {
             try {
-                return Optional.of(Integer.parseInt(s));
+                return Integer.parseInt(s) == i;
             } catch (NumberFormatException e) {
                 context.logger().log(Level.WARNING, event + " entries must have integer keys");
-                return Optional.empty();
+                return false;
             }
         }, replacements);
     }
@@ -88,7 +87,7 @@ public class CommandExecutor {
     public void executeMappedCommandsMatchingString(String event,
                                                     String toMatch,
                                                     Collection<Function<String, String>> replacements) {
-        executeMappedCommandsMatching(event, toMatch, Optional::of, replacements);
+        executeMappedCommandsMatching(event, toMatch, String::equalsIgnoreCase, replacements);
     }
 
     private void executeCommandWithReplacements(String command, Function<String, String> replacer) {
