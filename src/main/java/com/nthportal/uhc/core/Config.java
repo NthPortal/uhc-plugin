@@ -30,6 +30,10 @@ public final class Config {
         config.addDefault(Events.ON_EPISODE_START, emptyList);
         config.addDefault(Events.ON_EPISODE_END, emptyList);
         config.addDefault(Events.ON_DEATH, emptyList);
+        config.addDefault(Events.ON_PVP_KILL, emptyList);
+        config.addDefault(Events.ON_DEATH_OF, emptyMap);
+        config.addDefault(Events.ON_PVP_DEATH_OF, emptyMap);
+        config.addDefault(Events.ON_PVP_KILL_BY, emptyMap);
         config.addDefault(Events.ON_START_EP_NUM, emptyMap);
         config.addDefault(Events.ON_MINUTE, emptyMap);
 
@@ -69,6 +73,10 @@ public final class Config {
         public static final String ON_EPISODE_START = "on-ep-start";
         public static final String ON_EPISODE_END = "on-ep-end";
         public static final String ON_DEATH = "on-death";
+        public static final String ON_PVP_KILL = "on-pvp-kill";
+        public static final String ON_DEATH_OF = "on-death-of";
+        public static final String ON_PVP_DEATH_OF = "on-pvp-death-of";
+        public static final String ON_PVP_KILL_BY = "on-pvp-kill-by";
         public static final String ON_START_EP_NUM = "on-start-ep-num";
         public static final String ON_MINUTE = "on-minute";
     }

@@ -5,8 +5,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.val;
 import org.bukkit.Bukkit;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,35 +31,71 @@ public class CommandExecutor {
         executeEventCommands(event, Collections.emptyList());
     }
 
-    public void executeEventCommands(String event, List<Function<String, String>> replacements) {
+    public void executeEventCommands(String event, Collection<Function<String, String>> replacements) {
         val commands = context.plugin().getConfig().getStringList(event);
-        val replacer = replacements.stream().reduce(Function.identity(), Function::andThen);
+        val replacer = combineReplacements(replacements);
 
         commands.stream()
-                .map(command -> command.startsWith("/") ? command.substring(1) : command)
+                .map(CommandExecutor::cleanUpCommand)
                 .map(replacer)
                 .forEach(this::executeCommand);
     }
 
-    public void executeMappedCommandsMatching(String event, int toMatch) {
+    public <T> void executeMappedCommandsMatching(String event, T toMatch, Function<String, Optional<T>> fromString) {
+        executeMappedCommandsMatching(event, toMatch, fromString, Collections.emptyList());
+    }
+
+    public <T> void executeMappedCommandsMatching(String event,
+                                                  T toMatch,
+                                                  Function<String, Optional<T>> fromString,
+                                                  Collection<Function<String, String>> replacements) {
+        val replacer = combineReplacements(replacements);
         val mapList = context.plugin().getConfig().getMapList(event);
         for (val map : mapList) {
             for (val entry : map.entrySet()) {
-                try {
-                    val key = entry.getKey().toString();
-                    val command = entry.getValue().toString();
-                    val num = Integer.parseInt(key);
-                    if (num == toMatch) {
-                        executeCommand(command);
+                val key = entry.getKey().toString();
+                val command = entry.getValue().toString();
+                fromString.apply(key).ifPresent(value -> {
+                    if (toMatch.equals(value)) {
+                        executeCommandWithReplacements(command, replacer);
                     }
-                } catch (NumberFormatException e) {
-                    context.logger().log(Level.WARNING, event + " entries must have integer keys");
-                }
+                });
             }
         }
     }
 
-    public void executeCommand(final String command) {
+    public void executeMappedCommandsMatchingInt(String event, int toMatch) {
+        executeMappedCommandsMatchingInt(event, toMatch, Collections.emptyList());
+    }
+
+    public void executeMappedCommandsMatchingInt(String event,
+                                                 int toMatch,
+                                                 Collection<Function<String, String>> replacements) {
+        executeMappedCommandsMatching(event, toMatch, s -> {
+            try {
+                return Optional.of(Integer.parseInt(s));
+            } catch (NumberFormatException e) {
+                context.logger().log(Level.WARNING, event + " entries must have integer keys");
+                return Optional.empty();
+            }
+        }, replacements);
+    }
+
+    public void executeMappedCommandsMatchingString(String event, String toMatch) {
+        executeMappedCommandsMatchingString(event, toMatch, Collections.emptyList());
+    }
+
+    public void executeMappedCommandsMatchingString(String event,
+                                                    String toMatch,
+                                                    Collection<Function<String, String>> replacements) {
+        executeMappedCommandsMatching(event, toMatch, Optional::of, replacements);
+    }
+
+    private void executeCommandWithReplacements(String command, Function<String, String> replacer) {
+        executeCommand(replacer.apply(cleanUpCommand(command)));
+    }
+
+    private void executeCommand(String command) {
         context.logger().log(Level.INFO, "Executing command: " + command);
         val future = Bukkit.getScheduler().callSyncMethod(context.plugin(), () -> {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
@@ -75,8 +112,16 @@ public class CommandExecutor {
         });
     }
 
-    public static Function<String, String> replacement(final String target, final String replacement) {
+    public static Function<String, String> replacement(String target, String replacement) {
         return input -> input.replace(target, replacement);
+    }
+
+    private static Function<String, String> combineReplacements(Collection<Function<String, String>> replacements) {
+        return replacements.stream().reduce(Function.identity(), Function::andThen);
+    }
+
+    private static String cleanUpCommand(String command) {
+        return command.startsWith("/") ? command.substring(1) : command;
     }
 
     public static class ReplaceTargets {
@@ -84,5 +129,7 @@ public class CommandExecutor {
         public static final String EPISODE = "{{episode}}";
         public static final String COUNTDOWN_MARK = "{{mark}}";
         public static final String PLAYER = "{{player}}";
+        public static final String KILLER = "{{killer}}";
+        public static final String CORPSE = "{{corpse}}";
     }
 }
