@@ -22,7 +22,7 @@ commands:
     usage: |
       /uhc-test <countdown-start|full-countdown|start|full-start|stop|pause|resume>
       /uhc-test <countdown-mark|episode-change|minute> <NUMBER>
-      /uhc-test <death> <PLAYER>
-      /uhc-test <pvp-kill> <KILLER> <CORPSE>
+      /uhc-test death [PLAYER]
+      /uhc-test pvp-kill [KILLER] <CORPSE>
     permission: uhc-manager.configure
     permission-message: You don't have permission to run this command
