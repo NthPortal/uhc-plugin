@@ -113,7 +113,7 @@ public class TestCommandExecutor implements CommandExecutor {
             new SubCommand(Events.DEATH, new IntRange(0, 1)) {
                 @Override
                 boolean execute(CommandSender sender, String[] args) {
-                    Optional<Player> opt =  (args.length == 1) ? getPlayerArg(sender, args[0]) : commandSenderAsPlayer(sender);
+                    Optional<Player> opt = (args.length == 1) ? getPlayerArg(sender, args[0]) : commandSenderAsPlayer(sender);
                     opt.ifPresent(player -> doPlayerDeath(player));
                     return opt.isPresent();
                 }
@@ -123,15 +123,14 @@ public class TestCommandExecutor implements CommandExecutor {
                 boolean execute(CommandSender sender, String[] args) {
                     Optional<Player> killerOpt = (args.length == 2) ? getPlayerArg(sender, args[0]) : commandSenderAsPlayer(sender);
                     Optional<Player> valid = killerOpt.flatMap((Player killer) -> {
-                        Optional<Player> corpseOpt = getPlayerArg(sender, args[args.length - 1])
-                                .filter((Player corpse) -> {
-                                    boolean same = killer.equals(corpse);
-                                    if (same) {
-                                        sendError(sender, "Killer and corpse cannot be the same player");
-                                    }
-                                    return !same;
-                                });
-                        corpseOpt.ifPresent(corpse -> doPlayerKill(killer, corpse));
+                        Optional<Player> corpseOpt = getPlayerArg(sender, args[args.length - 1]);
+                        corpseOpt.ifPresent(corpse -> {
+                            if (killer.equals(corpse)) {
+                                sendError(sender, "Killer and corpse cannot be the same player");
+                            } else {
+                                doPlayerKill(killer, corpse);
+                            }
+                        });
                         return corpseOpt;
                     });
                     return valid.isPresent();
